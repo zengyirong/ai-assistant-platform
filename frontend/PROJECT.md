@@ -1,14 +1,24 @@
 # 本仓库中的前端
 
-本目录为 [vue-vben-admin](https://github.com/vbenjs/vue-vben-admin)（Vben Admin 5）官方 monorepo 骨架。
+本目录为精简后的 [vue-vben-admin](https://github.com/vbenjs/vue-vben-admin)（Vben Admin 5）骨架。
 
-一期主应用使用 **Element Plus** 版本：
+一期**仅保留** Element Plus 应用：
 
 ```text
-apps/web-ele
+apps/web-ele          # 主应用
+apps/backend-mock     # 开发期 mock（登录等）
+packages/ / internal/ # 框架公共包（勿删）
 ```
 
-与 Phase 0 目录约定对应关系：
+已移除：`web-antd` / `web-naive` / `web-tdesign` / `playground` / `docs`，以及 web-ele 内演示页（Demos、Analytics、Workspace、About、Vben 推广菜单）。
+
+当前菜单仅：
+
+```text
+概览 → 首页（空白壳）
+```
+
+后续业务按 Phase 0 约定扩展：
 
 ```text
 apps/web-ele/src/
@@ -26,13 +36,13 @@ apps/web-ele/src/
 cd frontend
 pnpm install
 pnpm run dev:ele
-# 或查看 package.json scripts
 ```
 
-后端默认：`http://127.0.0.1:8000`（需在 web-ele 环境变量中配置 API 地址）。
+默认登录（mock）：`admin` / `123456`（或 `vben` / `123456`）。
+
+后端真实 API 默认：`http://127.0.0.1:8000`（对接时改环境变量 / request 配置）。
 
 ## 说明
 
-- `create-vben` CLI 当前环境不可用，改为直接纳入官方仓库源码。
-- 已移除嵌套 `.git`，随本 monorepo 一并版本管理。
 - Chat / Citation 等 AI 组件按 Phase 0 自研，不强行塞进 Vben CRUD 模板。
+- 已去掉百度统计与演示通知假数据。
