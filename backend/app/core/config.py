@@ -57,6 +57,8 @@ class Settings(BaseSettings):
             "http://127.0.0.1:5173",
             "http://localhost:5666",
             "http://127.0.0.1:5666",
+            "http://localhost:5777",
+            "http://127.0.0.1:5777",
         ]
     )
 

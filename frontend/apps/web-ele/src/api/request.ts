@@ -71,12 +71,12 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     },
   });
 
-  // 处理返回的响应数据格式
+  // 处理返回的响应数据格式（兼容 mock code:0 与 FastAPI code:"OK"）
   client.addResponseInterceptor(
     defaultResponseInterceptor({
       codeField: 'code',
       dataField: 'data',
-      successCode: 0,
+      successCode: (code) => code === 'OK' || code === 0,
     }),
   );
 

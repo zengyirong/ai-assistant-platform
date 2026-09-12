@@ -33,14 +33,21 @@ apps/web-ele/src/
 ## 启动
 
 ```bash
+# 终端 1：后端
+cd backend
+uvicorn app.main:app --reload --port 8000
+
+# 终端 2：前端（已对接真实后端，不再走 Nitro mock）
 cd frontend
 pnpm install
 pnpm run dev:ele
 ```
 
-默认登录（mock）：`admin` / `123456`（或 `vben` / `123456`）。
+默认登录（真实后端种子）：`admin` / `Admin@123456`
 
-后端真实 API 默认：`http://127.0.0.1:8000`（对接时改环境变量 / request 配置）。
+前端请求：`/api/*` → Vite 代理 → `http://127.0.0.1:8000/api/v1/*`
+
+> 改 `.env.development` 后需重启 `pnpm run dev:ele`；若仍看到旧登录态，请清空浏览器 LocalStorage。
 
 ## 说明
 

@@ -2,9 +2,9 @@
 import type { VbenFormSchema } from '@vben/common-ui';
 import type { BasicOption } from '@vben/types';
 
-import { computed, markRaw } from 'vue';
+import { computed } from 'vue';
 
-import { AuthenticationLogin, SliderCaptcha, z } from '@vben/common-ui';
+import { AuthenticationLogin, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 import { useAuthStore } from '#/store';
@@ -13,18 +13,11 @@ defineOptions({ name: 'Login' });
 
 const authStore = useAuthStore();
 
-const MOCK_USER_OPTIONS: BasicOption[] = [
+/** 对接真实后端种子账号 */
+const ACCOUNT_OPTIONS: BasicOption[] = [
   {
-    label: 'Super',
-    value: 'vben',
-  },
-  {
-    label: 'Admin',
+    label: 'Admin（本地种子）',
     value: 'admin',
-  },
-  {
-    label: 'User',
-    value: 'jack',
   },
 ];
 
@@ -33,7 +26,7 @@ const formSchema = computed((): VbenFormSchema[] => {
     {
       component: 'VbenSelect',
       componentProps: {
-        options: MOCK_USER_OPTIONS,
+        options: ACCOUNT_OPTIONS,
         placeholder: $t('authentication.selectAccount'),
       },
       fieldName: 'selectAccount',
@@ -42,7 +35,7 @@ const formSchema = computed((): VbenFormSchema[] => {
         .string()
         .min(1, { message: $t('authentication.selectAccount') })
         .optional()
-        .default('vben'),
+        .default('admin'),
     },
     {
       component: 'VbenInput',
@@ -52,12 +45,12 @@ const formSchema = computed((): VbenFormSchema[] => {
       dependencies: {
         trigger(values, form) {
           if (values.selectAccount) {
-            const findUser = MOCK_USER_OPTIONS.find(
+            const findUser = ACCOUNT_OPTIONS.find(
               (item) => item.value === values.selectAccount,
             );
             if (findUser) {
               form.setValues({
-                password: '123456',
+                password: 'Admin@123456',
                 username: findUser.value,
               });
             }
@@ -68,6 +61,7 @@ const formSchema = computed((): VbenFormSchema[] => {
       fieldName: 'username',
       label: $t('authentication.username'),
       rules: z.string().min(1, { message: $t('authentication.usernameTip') }),
+      defaultValue: 'admin',
     },
     {
       component: 'VbenInputPassword',
@@ -77,13 +71,7 @@ const formSchema = computed((): VbenFormSchema[] => {
       fieldName: 'password',
       label: $t('authentication.password'),
       rules: z.string().min(1, { message: $t('authentication.passwordTip') }),
-    },
-    {
-      component: markRaw(SliderCaptcha),
-      fieldName: 'captcha',
-      rules: z.boolean().refine((value) => value, {
-        message: $t('authentication.verifyRequiredTip'),
-      }),
+      defaultValue: 'Admin@123456',
     },
   ];
 });
