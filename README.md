@@ -23,7 +23,8 @@
 - [x] 产品规划 V2 / Phase 0 / DDL / API / SSE / Compose
 - [x] 仓库脚手架（FastAPI + Vben web-ele 精简）
 - [x] Phase 1：Auth（login / me / logout + JWT）+ 核心 RBAC Models
-- [ ] Phase 1：Knowledge / Document / Job
+- [x] Phase 1：Knowledge Base CRUD / Members / RAG Config
+- [ ] Phase 1：Document / Job
 - [ ] Phase 1：RAG / Citation / SSE 业务
 
 ## 本地启动
