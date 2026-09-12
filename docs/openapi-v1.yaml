@@ -1,0 +1,1128 @@
+openapi: 3.1.0
+info:
+  title: AI Assistant Platform API
+  version: 1.0.0
+  description: |
+    Phase 1 REST + SSE contract.
+    Error codes and auth rules are defined in docs/api.md (source of truth for Error Matrix).
+servers:
+  - url: /
+paths:
+  /health:
+    get:
+      tags: [Infra]
+      summary: Liveness
+      security: []
+      responses:
+        '200':
+          description: Process alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /ready:
+    get:
+      tags: [Infra]
+      summary: Readiness (MySQL + Qdrant)
+      security: []
+      responses:
+        '200':
+          description: Dependencies ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadyResponse'
+        '503':
+          $ref: '#/components/responses/Error'
+
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseEnvelope'
+        '401':
+          $ref: '#/components/responses/Error'
+        '400':
+          $ref: '#/components/responses/Error'
+
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout
+      responses:
+        '200':
+          $ref: '#/components/responses/OkEmpty'
+        '401':
+          $ref: '#/components/responses/Error'
+
+  /api/v1/auth/me:
+    get:
+      tags: [Auth]
+      summary: Current user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponseEnvelope'
+        '401':
+          $ref: '#/components/responses/Error'
+
+  /api/v1/spaces:
+    get:
+      tags: [Space]
+      summary: List spaces
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpacePageEnvelope'
+        '401':
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [Space]
+      summary: Create space
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpaceCreateRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/spaces/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Space]
+      summary: Get space
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceEnvelope'
+          description: OK
+        default:
+          $ref: '#/components/responses/Error'
+    put:
+      tags: [Space]
+      summary: Update space
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpaceUpdateRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceEnvelope'
+          description: OK
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      tags: [Space]
+      summary: Delete space (not default)
+      responses:
+        '200':
+          $ref: '#/components/responses/OkEmpty'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/spaces/{id}/members:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Space]
+      summary: List space members
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceMemberListEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [Space]
+      summary: Add space member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpaceMemberAddRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/OkEmpty'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/spaces/{id}/members/{user_id}:
+    delete:
+      tags: [Space]
+      summary: Remove space member
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          $ref: '#/components/responses/OkEmpty'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/knowledge-bases:
+    get:
+      tags: [KnowledgeBase]
+      summary: List accessible knowledge bases
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeBasePageEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [KnowledgeBase]
+      summary: Create knowledge base
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KnowledgeBaseCreateRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeBaseEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/knowledge-bases/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [KnowledgeBase]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeBaseEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+    put:
+      tags: [KnowledgeBase]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KnowledgeBaseUpdateRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeBaseEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      tags: [KnowledgeBase]
+      responses:
+        '200':
+          $ref: '#/components/responses/OkEmpty'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/knowledge-bases/{id}/members:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [KnowledgeBase]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KbMemberListEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [KnowledgeBase]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KbMemberAddRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/OkEmpty'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/knowledge-bases/{id}/members/{user_id}:
+    delete:
+      tags: [KnowledgeBase]
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          $ref: '#/components/responses/OkEmpty'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/knowledge-bases/{id}/rag-config:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [KnowledgeBase]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagConfigEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+    put:
+      tags: [KnowledgeBase]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RagConfigUpdateRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagConfigEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/knowledge-bases/{kb_id}/documents:
+    parameters:
+      - name: kb_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Document]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentPageEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [Document]
+      summary: Upload document
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentUploadEnvelope'
+        '409':
+          $ref: '#/components/responses/Error'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/documents/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Document]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      tags: [Document]
+      responses:
+        '200':
+          $ref: '#/components/responses/OkEmpty'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/documents/{id}/retry:
+    post:
+      tags: [Document]
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentJobEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/documents/{id}/jobs:
+    get:
+      tags: [Document]
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentJobListEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/conversations:
+    get:
+      tags: [Conversation]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationPageEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [Conversation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationCreateRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/conversations/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Conversation]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      tags: [Conversation]
+      responses:
+        '200':
+          $ref: '#/components/responses/OkEmpty'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/conversations/{id}/messages:
+    get:
+      tags: [Conversation]
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessagePageEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/v1/chat/stream:
+    post:
+      tags: [Chat]
+      summary: RAG chat SSE stream
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatStreamRequest'
+      responses:
+        '200':
+          description: SSE stream (see docs/sse-protocol.md)
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        default:
+          $ref: '#/components/responses/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    OkEmpty:
+      description: Success with empty data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OkEmptyEnvelope'
+    Error:
+      description: Error envelope
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+  schemas:
+    ErrorEnvelope:
+      type: object
+      required: [code, message, request_id]
+      properties:
+        code:
+          type: string
+          example: KB_PERMISSION_DENIED
+        message:
+          type: string
+        request_id:
+          type: string
+        details:
+          nullable: true
+
+    OkEmptyEnvelope:
+      type: object
+      required: [code, message, data, request_id]
+      properties:
+        code:
+          type: string
+          example: OK
+        message:
+          type: string
+          example: success
+        data:
+          type: object
+          additionalProperties: false
+        request_id:
+          type: string
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+
+    ReadyResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ready
+        checks:
+          type: object
+          additionalProperties:
+            type: string
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+
+    UserBrief:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        username: { type: string }
+        nickname: { type: string, nullable: true }
+        org_id: { type: string, format: uuid }
+        roles:
+          type: array
+          items: { type: string }
+
+    LoginResponseEnvelope:
+      type: object
+      properties:
+        code: { type: string, example: OK }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          type: object
+          properties:
+            access_token: { type: string }
+            token_type: { type: string, example: bearer }
+            expires_in: { type: integer }
+            user:
+              $ref: '#/components/schemas/UserBrief'
+
+    MeResponseEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          allOf:
+            - $ref: '#/components/schemas/UserBrief'
+            - type: object
+              properties:
+                permissions:
+                  type: array
+                  items: { type: string }
+
+    Space:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        org_id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        is_default: { type: boolean }
+        owner_id: { type: string, format: uuid, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    SpaceCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        description: { type: string, nullable: true }
+
+    SpaceUpdateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string, nullable: true }
+
+    SpaceEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          $ref: '#/components/schemas/Space'
+
+    PageMeta:
+      type: object
+      properties:
+        items:
+          type: array
+          items: {}
+        total: { type: integer }
+        page: { type: integer }
+        page_size: { type: integer }
+
+    SpacePageEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Space'
+            total: { type: integer }
+            page: { type: integer }
+            page_size: { type: integer }
+
+    SpaceMemberAddRequest:
+      type: object
+      required: [user_id, role]
+      properties:
+        user_id: { type: string, format: uuid }
+        role:
+          type: string
+          enum: [OWNER, MEMBER]
+
+    SpaceMember:
+      type: object
+      properties:
+        user_id: { type: string, format: uuid }
+        role: { type: string }
+        created_at: { type: string, format: date-time }
+
+    SpaceMemberListEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/SpaceMember'
+
+    KnowledgeBase:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        org_id: { type: string, format: uuid }
+        space_id: { type: string, format: uuid, nullable: true }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        visibility:
+          type: string
+          enum: [PRIVATE, SPACE]
+        status: { type: string }
+        created_by: { type: string, format: uuid }
+        document_count: { type: integer, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    KnowledgeBaseCreateRequest:
+      type: object
+      required: [name, visibility]
+      properties:
+        name: { type: string }
+        description: { type: string, nullable: true }
+        visibility:
+          type: string
+          enum: [PRIVATE, SPACE]
+        space_id:
+          type: string
+          format: uuid
+          nullable: true
+
+    KnowledgeBaseUpdateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string, nullable: true }
+        visibility:
+          type: string
+          enum: [PRIVATE, SPACE]
+        space_id:
+          type: string
+          format: uuid
+          nullable: true
+
+    KnowledgeBaseEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          $ref: '#/components/schemas/KnowledgeBase'
+
+    KnowledgeBasePageEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/KnowledgeBase'
+            total: { type: integer }
+            page: { type: integer }
+            page_size: { type: integer }
+
+    KbMemberAddRequest:
+      type: object
+      required: [user_id, role]
+      properties:
+        user_id: { type: string, format: uuid }
+        role:
+          type: string
+          enum: [OWNER, EDITOR, VIEWER]
+
+    KbMember:
+      type: object
+      properties:
+        user_id: { type: string, format: uuid }
+        role: { type: string }
+        created_at: { type: string, format: date-time }
+
+    KbMemberListEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/KbMember'
+
+    RagConfig:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        kb_id: { type: string, format: uuid }
+        chunk_strategy: { type: string }
+        chunk_size: { type: integer }
+        chunk_overlap: { type: integer }
+        top_k: { type: integer }
+        score_threshold: { type: number, nullable: true }
+        llm_model: { type: string, nullable: true }
+        temperature: { type: number }
+        system_prompt: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    RagConfigUpdateRequest:
+      type: object
+      properties:
+        chunk_strategy: { type: string }
+        chunk_size: { type: integer }
+        chunk_overlap: { type: integer }
+        top_k: { type: integer }
+        score_threshold: { type: number, nullable: true }
+        llm_model: { type: string, nullable: true }
+        temperature: { type: number }
+        system_prompt: { type: string, nullable: true }
+
+    RagConfigEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          $ref: '#/components/schemas/RagConfig'
+
+    Document:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        org_id: { type: string, format: uuid }
+        kb_id: { type: string, format: uuid }
+        file_name: { type: string }
+        file_hash: { type: string }
+        file_type: { type: string }
+        file_size: { type: integer }
+        page_count: { type: integer, nullable: true }
+        status: { type: string }
+        created_by: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    DocumentEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          $ref: '#/components/schemas/Document'
+
+    DocumentPageEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Document'
+            total: { type: integer }
+            page: { type: integer }
+            page_size: { type: integer }
+
+    DocumentUploadEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          allOf:
+            - $ref: '#/components/schemas/Document'
+            - type: object
+              properties:
+                job_id: { type: string, format: uuid }
+
+    DocumentJob:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        document_id: { type: string, format: uuid }
+        job_type: { type: string }
+        status: { type: string }
+        progress: { type: integer }
+        retry_count: { type: integer }
+        error_code: { type: string, nullable: true }
+        error_message: { type: string, nullable: true }
+        started_at: { type: string, format: date-time, nullable: true }
+        finished_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    DocumentJobEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          $ref: '#/components/schemas/DocumentJob'
+
+    DocumentJobListEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentJob'
+
+    Conversation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        org_id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        title: { type: string, nullable: true }
+        kb_scope:
+          type: object
+          nullable: true
+          additionalProperties: true
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    ConversationCreateRequest:
+      type: object
+      properties:
+        title: { type: string, nullable: true }
+        kb_ids:
+          type: array
+          items: { type: string, format: uuid }
+
+    ConversationEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          $ref: '#/components/schemas/Conversation'
+
+    ConversationPageEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Conversation'
+            total: { type: integer }
+            page: { type: integer }
+            page_size: { type: integer }
+
+    Citation:
+      type: object
+      properties:
+        document_id: { type: string, format: uuid }
+        document_name: { type: string, nullable: true }
+        chunk_id: { type: string, format: uuid }
+        page: { type: integer, nullable: true }
+        section: { type: string, nullable: true }
+        score: { type: number, nullable: true }
+        snippet: { type: string, nullable: true }
+        sort_order: { type: integer }
+
+    Message:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        conversation_id: { type: string, format: uuid }
+        role:
+          type: string
+          enum: [USER, ASSISTANT, SYSTEM]
+        content: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [GENERATING, COMPLETED, ABORTED, FAILED]
+        request_id: { type: string, nullable: true }
+        citations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Citation'
+        created_at: { type: string, format: date-time }
+
+    MessagePageEnvelope:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Message'
+            total: { type: integer }
+            page: { type: integer }
+            page_size: { type: integer }
+
+    ChatStreamRequest:
+      type: object
+      required: [conversation_id, question]
+      properties:
+        conversation_id: { type: string, format: uuid }
+        question: { type: string }
+        kb_ids:
+          type: array
+          items: { type: string, format: uuid }
+          description: Empty = all accessible KBs; Global Top-K across filter
+
+security:
+  - bearerAuth: []
