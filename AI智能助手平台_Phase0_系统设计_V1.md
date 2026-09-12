@@ -1401,9 +1401,10 @@ Phase 0 还需要继续细化（落实，非方向未定）：
 - [x] OpenAPI Request / Response Schema → [`docs/openapi-v1.yaml`](./docs/openapi-v1.yaml) + [`docs/api.md`](./docs/api.md)
 - [x] Error Matrix 与路由鉴权对照表细化 → [`docs/api.md`](./docs/api.md)
 - [x] SSE TypeScript 类型定义（草案）→ [`docs/sse-protocol.md`](./docs/sse-protocol.md)
-- [ ] SSE Python Pydantic 类型定义（脚手架时落 `backend/app/schemas/sse.py`）
+- [x] SSE Python Pydantic 类型定义 → [`backend/app/schemas/sse.py`](./backend/app/schemas/sse.py)
 - [x] docker-compose.yml 实际文件 → [`deploy/docker-compose.yml`](./deploy/docker-compose.yml)
-- [ ] Alembic 初始 Migration 方案
+- [x] 仓库脚手架 backend FastAPI + frontend Vben（web-ele）
+- [ ] Alembic 初始 Migration（待 SQLAlchemy models 后 autogenerate）
 
 ---
 
@@ -1428,4 +1429,4 @@ Phase 1 编码（Shift-left 测试）
 
 下一项直接开始：
 
-> **仓库脚手架（FastAPI + Vben）+ Alembic / SSE Pydantic**（API / SSE / Compose 已落盘）
+> **Phase 1：Auth / RBAC + SQLAlchemy Models + Alembic**（脚手架已就绪）

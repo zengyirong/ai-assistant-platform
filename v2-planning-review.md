@@ -311,4 +311,4 @@ R6  ADR-008 Shift-left   ✅
 
 V2 规划 + Phase 0 拍板决议可作为一期实施依据。
 
-**DDL / API / SSE / Compose 已落地。** 下一优先项：**仓库脚手架（backend FastAPI + frontend Vben）**，并带上 Alembic 与 SSE Pydantic。
+**DDL / API / SSE / Compose / 脚手架已落地。** 下一优先项：**Phase 1 Auth + SQLAlchemy Models**。

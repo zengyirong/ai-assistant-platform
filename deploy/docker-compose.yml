@@ -1,34 +1,12 @@
 # Local / demo dependencies for AI Assistant Platform
-# Usage:
+# Default: Qdrant only. MySQL uses the host install (port 3306).
+#
 #   docker compose -f deploy/docker-compose.yml up -d
-# Backend/frontend run on host during early Phase 1 for easier debug.
+#
+# Optional containerized MySQL (requires free host port, e.g. 3307):
+#   docker compose -f deploy/docker-compose.yml --profile docker-mysql up -d
 
 services:
-  mysql:
-    image: mysql:8.4
-    container_name: aap-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: ai_assistant
-      MYSQL_USER: aap
-      MYSQL_PASSWORD: aap_pass
-    ports:
-      - "3306:3306"
-    volumes:
-      - aap_mysql_data:/var/lib/mysql
-      - ../docs/mysql/ddl_v1.sql:/docker-entrypoint-initdb.d/01_ddl.sql:ro
-      - ../docs/mysql/seed_v1.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-      - --default-authentication-plugin=caching_sha2_password
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-
   qdrant:
     image: qdrant/qdrant:v1.13.2
     container_name: aap-qdrant
@@ -40,6 +18,32 @@ services:
       - aap_qdrant_data:/qdrant/storage
     healthcheck:
       test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mysql:
+    profiles: ["docker-mysql"]
+    image: mysql:8.4
+    container_name: aap-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ai_assistant
+      MYSQL_USER: aap
+      MYSQL_PASSWORD: aap_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - aap_mysql_data:/var/lib/mysql
+      - ../docs/mysql/ddl_v1.sql:/docker-entrypoint-initdb.d/01_ddl.sql:ro
+      - ../docs/mysql/seed_v1.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=caching_sha2_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
       interval: 5s
       timeout: 5s
       retries: 20
