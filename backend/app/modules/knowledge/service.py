@@ -219,6 +219,20 @@ def _accessible_filter(
     return (KnowledgeBase.org_id == user.org_id) & or_(*clauses)
 
 
+async def list_accessible_kb_ids(
+    db: AsyncSession,
+    user: CurrentUser,
+) -> list[str]:
+    space_ids = await _space_member_ids(db, user_id=user.id)
+    result = await db.execute(
+        select(KnowledgeBase.id).where(
+            _accessible_filter(user, space_ids=space_ids),
+            KnowledgeBase.status == "ACTIVE",
+        )
+    )
+    return list(result.scalars().all())
+
+
 async def list_knowledge_bases(
     db: AsyncSession,
     user: CurrentUser,

@@ -1,5 +1,6 @@
 """ORM model exports for Alembic / app imports."""
 
+from app.models.conversation import Conversation, ConversationMessage, MessageCitation
 from app.models.document import Document, DocumentChunk, DocumentJob
 from app.models.knowledge import KnowledgeBase, KnowledgeBaseMember, RagConfig
 from app.models.organization import Organization, Space, SpaceMember
@@ -12,11 +13,14 @@ from app.models.user import (
 )
 
 __all__ = [
+    "Conversation",
+    "ConversationMessage",
     "Document",
     "DocumentChunk",
     "DocumentJob",
     "KnowledgeBase",
     "KnowledgeBaseMember",
+    "MessageCitation",
     "Organization",
     "RagConfig",
     "Space",

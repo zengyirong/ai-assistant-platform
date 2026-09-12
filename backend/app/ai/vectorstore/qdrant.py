@@ -171,13 +171,14 @@ class QdrantVectorStore(VectorStore):
                 qm.FieldCondition(key="kb_id", match=qm.MatchAny(any=list(kb_ids)))
             )
         try:
-            hits = await client.search(
+            response = await client.query_points(
                 collection_name=self.collection,
-                query_vector=query_vector,
+                query=query_vector,
                 query_filter=qm.Filter(must=must) if must else None,
                 limit=top_k,
                 with_payload=True,
             )
+            hits = response.points
         except Exception as exc:
             raise AppError(
                 "VECTOR_STORE_UNAVAILABLE",

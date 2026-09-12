@@ -26,8 +26,9 @@
 - [x] Phase 1：Knowledge Base CRUD / Members / RAG Config
 - [x] Phase 1：Document 上传 / Job 状态机骨架（txt/md 可走通）
 - [x] Phase 1：Embedding + Qdrant Index（默认 fake embedding；可切真实 API）
+- [x] Phase 1：RAG / Citation / SSE Chat（fake LLM 可离线跑通）
 - [ ] Phase 1：PDF/DOCX 解析
-- [ ] Phase 1：RAG / Citation / SSE 业务
+- [ ] 前端对接真实后端 / Chat UI
 
 ## 本地启动
 

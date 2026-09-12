@@ -40,6 +40,11 @@ class Settings(BaseSettings):
 
     QDRANT_COLLECTION: str = "knowledge_chunks"
 
+    LLM_PROVIDER: str = "fake"  # fake | openai_compatible
+    RAG_TOP_K: int = 5
+    RAG_SCORE_THRESHOLD: float | None = None
+    RAG_REFUSE_MESSAGE: str = "当前知识库中未找到可靠依据。"
+
     FILE_STORAGE_PATH: str = "./data/files"
     MAX_UPLOAD_SIZE_MB: int = 20
 
