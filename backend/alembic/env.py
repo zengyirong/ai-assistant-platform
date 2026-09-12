@@ -12,9 +12,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.core.config import settings
 from app.db.base import Base
-
-# Import models for metadata once they exist:
-# import app.models  # noqa: F401
+import app.models  # noqa: F401 — register mappers
 
 config = context.config
 if config.config_file_name is not None:

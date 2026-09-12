@@ -20,12 +20,11 @@
 
 ## 当前进度
 
-- [x] 产品规划 V2
-- [x] Phase 0 设计 + R1–R6 拍板
-- [x] MySQL DDL V1 / API / SSE / Compose
-- [x] 仓库脚手架（FastAPI + Vben web-ele）
-- [ ] Phase 1：Auth / RBAC / Models
-- [ ] Phase 1：Knowledge / Document / RAG / SSE 业务
+- [x] 产品规划 V2 / Phase 0 / DDL / API / SSE / Compose
+- [x] 仓库脚手架（FastAPI + Vben web-ele 精简）
+- [x] Phase 1：Auth（login / me / logout + JWT）+ 核心 RBAC Models
+- [ ] Phase 1：Knowledge / Document / Job
+- [ ] Phase 1：RAG / Citation / SSE 业务
 
 ## 本地启动
 

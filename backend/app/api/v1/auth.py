@@ -1,49 +1,48 @@
-"""Auth routes — scaffold stubs for Phase 1."""
+"""Auth routes."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import AppError
+from app.api.deps import ok
+from app.core.auth.deps import CurrentUser, get_current_user
+from app.db.session import get_db
+from app.modules.auth import service as auth_service
 
 router = APIRouter()
 
 
 class LoginRequest(BaseModel):
-    username: str = Field(min_length=1)
-    password: str = Field(min_length=1)
-
-
-class LoginData(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    expires_in: int
-    user: dict
+    username: str = Field(min_length=1, max_length=64)
+    password: str = Field(min_length=1, max_length=128)
 
 
 @router.post("/login")
-async def login(body: LoginRequest) -> dict:
-    # Phase 1: verify against sys_user + issue JWT
-    raise AppError(
-        "AUTH_UNAUTHORIZED",
-        "认证尚未实现，请等待 Phase 1 Auth 模块",
-        http_status=401,
+async def login(
+    request: Request,
+    body: LoginRequest,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    data = await auth_service.login(
+        db,
+        username=body.username,
+        password=body.password,
     )
+    return ok(request, data)
 
 
 @router.post("/logout")
-async def logout() -> dict:
-    return {
-        "code": "OK",
-        "message": "success",
-        "data": {},
-        "request_id": "pending",
-    }
+async def logout(
+    request: Request,
+    _user: CurrentUser = Depends(get_current_user),
+) -> dict:
+    # JWT is stateless in Phase 1; client discards token. Audit later.
+    return ok(request, {})
 
 
 @router.get("/me")
-async def me() -> dict:
-    raise AppError(
-        "AUTH_UNAUTHORIZED",
-        "认证尚未实现，请等待 Phase 1 Auth 模块",
-        http_status=401,
-    )
+async def me(
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+) -> dict:
+    return ok(request, auth_service.me_payload(current))

@@ -2,7 +2,7 @@
 -- Requires: ddl_v1.sql already applied
 -- Password placeholder: replace password_hash before production use.
 -- Demo admin password plaintext for local only: Admin@123456
--- bcrypt hash below is a placeholder string; backend bootstrap should re-hash on first run if needed.
+-- bcrypt hash generated via app.core.security.hash_password
 
 USE ai_assistant;
 
@@ -51,18 +51,20 @@ INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES
   (UUID(), @role_user, 'p0000000-0000-0000-0000-00000000000a')
 ON DUPLICATE KEY UPDATE role_id = role_id;
 
--- bcrypt for Admin@123456 (cost 12) — generate with backend on bootstrap if login fails
+-- bcrypt for Admin@123456 (cost 12)
 INSERT INTO sys_user (id, org_id, username, password_hash, nickname, email, status)
 VALUES (
   @admin_id,
   @org_id,
   'admin',
-  '$2b$12$LQ8.placeholder.replace.in.bootstrapxxxxxxxxx',
+  '$2b$12$96jyybMfILgf.vxno4Ub6u/n.z7q7nljrUyMUyT2pp/w.rkmgfNbO',
   'Admin',
   'admin@example.com',
   'ACTIVE'
 )
-ON DUPLICATE KEY UPDATE nickname = VALUES(nickname);
+ON DUPLICATE KEY UPDATE
+  password_hash = VALUES(password_hash),
+  nickname = VALUES(nickname);
 
 INSERT INTO sys_user_role (id, user_id, role_id)
 VALUES (UUID(), @admin_id, @role_admin)

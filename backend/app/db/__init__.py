@@ -1,8 +1,15 @@
 """Import all models here for Alembic metadata discovery."""
 
 from app.db.base import Base
-
-# Phase 1: add model imports, e.g.
-# from app.models.user import SysUser  # noqa: F401
+from app.models import (  # noqa: F401
+    Organization,
+    Space,
+    SpaceMember,
+    SysPermission,
+    SysRole,
+    SysRolePermission,
+    SysUser,
+    SysUserRole,
+)
 
 __all__ = ["Base"]
