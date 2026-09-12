@@ -150,6 +150,21 @@ async def _get_kb(
     return result.scalar_one_or_none()
 
 
+async def ensure_kb_access(
+    db: AsyncSession,
+    user: CurrentUser,
+    kb_id: str,
+    *,
+    needed: AccessLevel = "VIEW",
+) -> KnowledgeBase:
+    kb = await _get_kb(db, kb_id)
+    if kb is None or kb.status != "ACTIVE":
+        raise AppError("KB_NOT_FOUND", "知识库不存在或不可见", http_status=404)
+    space_ids = await _space_member_ids(db, user_id=user.id)
+    require_level(user_access_level(user, kb, space_ids=space_ids), needed)
+    return kb
+
+
 async def _ensure_space(
     db: AsyncSession,
     *,

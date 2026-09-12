@@ -24,7 +24,9 @@
 - [x] 仓库脚手架（FastAPI + Vben web-ele 精简）
 - [x] Phase 1：Auth（login / me / logout + JWT）+ 核心 RBAC Models
 - [x] Phase 1：Knowledge Base CRUD / Members / RAG Config
-- [ ] Phase 1：Document / Job
+- [x] Phase 1：Document 上传 / Job 状态机骨架（txt/md 可走通）
+- [x] Phase 1：Embedding + Qdrant Index（默认 fake embedding；可切真实 API）
+- [ ] Phase 1：PDF/DOCX 解析
 - [ ] Phase 1：RAG / Citation / SSE 业务
 
 ## 本地启动

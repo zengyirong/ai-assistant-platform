@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     EMBEDDING_API_KEY: str = ""
     EMBEDDING_MODEL: str = "text-embedding-3-small"
     EMBEDDING_DIMENSION: int = 1536
+    EMBEDDING_PROVIDER: str = "fake"  # fake | openai_compatible
+
+    QDRANT_COLLECTION: str = "knowledge_chunks"
 
     FILE_STORAGE_PATH: str = "./data/files"
     MAX_UPLOAD_SIZE_MB: int = 20
