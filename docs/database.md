@@ -1,7 +1,7 @@
 # 数据库设计 V1
 
-> 依据：[AI智能助手平台_Phase0_系统设计_V1.md](../AI智能助手平台_Phase0_系统设计_V1.md)  
-> 决议：[v2-planning-review.md](../v2-planning-review.md) R1–R6  
+> 依据：[AI智能助手平台_Phase0_系统设计_V1.md](../plan/AI智能助手平台_Phase0_系统设计_V1.md)  
+> 决议：[v2-planning-review.md](../plan/v2-planning-review.md) R1–R6
 > 可执行脚本：[mysql/ddl_v1.sql](./mysql/ddl_v1.sql)  
 > 种子数据：[mysql/seed_v1.sql](./mysql/seed_v1.sql)
 

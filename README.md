@@ -7,9 +7,11 @@
 | 文档 | 说明 |
 |---|---|
 | [项目已完成工作记录.md](./项目已完成工作记录.md) | 已完成项汇总 |
-| [AI智能助手产品规划_V2.md](./AI智能助手产品规划_V2.md) | 产品范围与分期 |
-| [AI智能助手平台_Phase0_系统设计_V1.md](./AI智能助手平台_Phase0_系统设计_V1.md) | Phase 0 系统设计 |
-| [v2-planning-review.md](./v2-planning-review.md) | 审查决议闭环 |
+| [plan/AI智能助手产品规划_V2.md](./plan/AI智能助手产品规划_V2.md) | 产品范围与分期 |
+| [plan/v2-planning-review.md](./plan/v2-planning-review.md) | 审查决议闭环 |
+| [plan/AI智能助手平台_Phase0_系统设计_V1.md](./plan/AI智能助手平台_Phase0_系统设计_V1.md) | Phase 0 系统设计 |
+| [plan/AI智能助手平台_Phase0.5_UIUX设计_V1.md](./plan/AI智能助手平台_Phase0.5_UIUX设计_V1.md) | Phase 0.5 UI/UX |
+| [plan/README.md](./plan/README.md) | 规划文档索引 |
 | [docs/database.md](./docs/database.md) | 数据库设计 V1 |
 | [docs/api.md](./docs/api.md) | API + Error / 鉴权矩阵 |
 | [docs/openapi-v1.yaml](./docs/openapi-v1.yaml) | OpenAPI 3.1 |

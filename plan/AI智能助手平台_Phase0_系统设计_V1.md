@@ -1397,12 +1397,12 @@ Embedding 为平台（org）级配置，不进入 KB `rag_config`。
 
 Phase 0 还需要继续细化（落实，非方向未定）：
 
-- [x] MySQL 字段级 DDL + 索引 + 唯一约束（含 `kb_id+file_hash`、`document_id+chunk_index`）→ [`docs/mysql/ddl_v1.sql`](./docs/mysql/ddl_v1.sql)
-- [x] OpenAPI Request / Response Schema → [`docs/openapi-v1.yaml`](./docs/openapi-v1.yaml) + [`docs/api.md`](./docs/api.md)
-- [x] Error Matrix 与路由鉴权对照表细化 → [`docs/api.md`](./docs/api.md)
-- [x] SSE TypeScript 类型定义（草案）→ [`docs/sse-protocol.md`](./docs/sse-protocol.md)
-- [x] SSE Python Pydantic 类型定义 → [`backend/app/schemas/sse.py`](./backend/app/schemas/sse.py)
-- [x] docker-compose.yml 实际文件 → [`deploy/docker-compose.yml`](./deploy/docker-compose.yml)
+- [x] MySQL 字段级 DDL + 索引 + 唯一约束（含 `kb_id+file_hash`、`document_id+chunk_index`）→ [`docs/mysql/ddl_v1.sql`](../docs/mysql/ddl_v1.sql)
+- [x] OpenAPI Request / Response Schema → [`docs/openapi-v1.yaml`](../docs/openapi-v1.yaml) + [`docs/api.md`](../docs/api.md)
+- [x] Error Matrix 与路由鉴权对照表细化 → [`docs/api.md`](../docs/api.md)
+- [x] SSE TypeScript 类型定义（草案）→ [`docs/sse-protocol.md`](../docs/sse-protocol.md)
+- [x] SSE Python Pydantic 类型定义 → [`backend/app/schemas/sse.py`](../backend/app/schemas/sse.py)
+- [x] docker-compose.yml 实际文件 → [`deploy/docker-compose.yml`](../deploy/docker-compose.yml)
 - [x] 仓库脚手架 backend FastAPI + frontend Vben（web-ele）
 - [ ] Alembic 初始 Migration（待 SQLAlchemy models 后 autogenerate）
 

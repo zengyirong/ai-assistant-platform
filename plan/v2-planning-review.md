@@ -52,7 +52,7 @@ SSE 类型 / docker-compose / 脚手架
 **落实跟踪**
 
 - [x] Phase 0 §6 关联表字段节
-- [x] MySQL DDL V1 + 种子脚本（[`docs/mysql/ddl_v1.sql`](./docs/mysql/ddl_v1.sql)、[`docs/database.md`](./docs/database.md)）
+- [x] MySQL DDL V1 + 种子脚本（[`docs/mysql/ddl_v1.sql`](../docs/mysql/ddl_v1.sql)、[`docs/database.md`](../docs/database.md)）
 - [ ] Alembic 初始 migration（脚手架时与 SQLAlchemy models 对齐）
 
 ---
@@ -109,7 +109,7 @@ FileStorage = 原始文档真源
 **落实跟踪**
 
 - [x] 决议写入本文件与 Phase 0
-- [x] DDL / Qdrant payload / RAG 流程章节对齐（[`docs/mysql/ddl_v1.sql`](./docs/mysql/ddl_v1.sql) 含 `document_chunk`）
+- [x] DDL / Qdrant payload / RAG 流程章节对齐（[`docs/mysql/ddl_v1.sql`](../docs/mysql/ddl_v1.sql) 含 `document_chunk`）
 
 ---
 
@@ -275,10 +275,10 @@ DoD：
 
 | ID | 项 | 严重度 | 状态 | 落实物 |
 |---|---|---|---|---|
-| R1 | ER + DDL + Index | P0 | **resolved** → DDL 已落盘 | [`docs/database.md`](./docs/database.md), [`docs/mysql/ddl_v1.sql`](./docs/mysql/ddl_v1.sql) |
+| R1 | ER + DDL + Index | P0 | **resolved** → DDL 已落盘 | [`docs/database.md`](../docs/database.md), [`docs/mysql/ddl_v1.sql`](../docs/mysql/ddl_v1.sql) |
 | R2 | document_chunk / MySQL 真源 | P0 | **resolved** → DDL 已落盘 | `document_chunk` 表已建 |
 | R3 | Default Space | P0 | **resolved** | Phase 0 + `seed_v1.sql` |
-| R4 | OpenAPI + Error Matrix | P0 | **resolved** → 已落盘 | [`docs/api.md`](./docs/api.md), [`docs/openapi-v1.yaml`](./docs/openapi-v1.yaml) |
+| R4 | OpenAPI + Error Matrix | P0 | **resolved** → 已落盘 | [`docs/api.md`](../docs/api.md), [`docs/openapi-v1.yaml`](../docs/openapi-v1.yaml) |
 | R5 | Embedding / Hash / Multi-KB / Health / Lint | P1 | **resolved** | Phase 0 + `platform_ai_config` DDL + Compose |
 | R6 | Shift-left Testing | P1 | **resolved** | ADR-008 |
 
