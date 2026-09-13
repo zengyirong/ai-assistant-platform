@@ -1,10 +1,15 @@
 <script lang="ts" setup>
-import type { UploadUserFile } from 'element-plus';
+import type { FormInstance, FormRules, UploadUserFile } from 'element-plus';
 
 import type { DocumentItem } from '#/types/document';
-import type { KnowledgeBase, KbMember, RagConfig } from '#/types/knowledge';
+import type {
+  KnowledgeBase,
+  KbMember,
+  KbMemberRole,
+  RagConfig,
+} from '#/types/knowledge';
 
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
@@ -12,8 +17,14 @@ import { Page } from '@vben/common-ui';
 import {
   ElButton,
   ElDialog,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElInputNumber,
   ElMessage,
   ElMessageBox,
+  ElOption,
+  ElSelect,
   ElSpace,
   ElTabPane,
   ElTable,
@@ -31,9 +42,12 @@ import {
   uploadDocumentApi,
 } from '#/api/document';
 import {
+  addKbMemberApi,
   getKnowledgeBaseApi,
   getRagConfigApi,
   listKbMembersApi,
+  removeKbMemberApi,
+  updateRagConfigApi,
 } from '#/api/knowledge';
 import { DOCUMENT_STATUS_MAP } from '#/types/document';
 
@@ -57,7 +71,44 @@ const uploading = ref(false);
 const fileList = ref<UploadUserFile[]>([]);
 const pollTimer = ref<null | ReturnType<typeof setInterval>>(null);
 
+const memberDialogVisible = ref(false);
+const memberSaving = ref(false);
+const memberFormRef = ref<FormInstance>();
+const memberForm = reactive({
+  user_id: '',
+  role: 'VIEWER' as KbMemberRole,
+});
+const memberRules: FormRules = {
+  user_id: [{ required: true, message: '请输入用户 ID', trigger: 'blur' }],
+  role: [{ required: true, message: '请选择角色', trigger: 'change' }],
+};
+
+const ragFormRef = ref<FormInstance>();
+const ragSaving = ref(false);
+const ragForm = reactive({
+  chunk_strategy: 'recursive',
+  chunk_size: 800,
+  chunk_overlap: 120,
+  top_k: 5,
+  score_threshold: null as null | number,
+  llm_model: '' as string,
+  temperature: 0.2,
+  system_prompt: '' as string,
+});
+const ragRules: FormRules = {
+  chunk_size: [{ required: true, message: '必填', trigger: 'blur' }],
+  chunk_overlap: [{ required: true, message: '必填', trigger: 'blur' }],
+  top_k: [{ required: true, message: '必填', trigger: 'blur' }],
+  temperature: [{ required: true, message: '必填', trigger: 'blur' }],
+};
+
 const title = computed(() => kb.value?.name || '知识库详情');
+
+const roleLabel: Record<KbMemberRole, string> = {
+  OWNER: '所有者',
+  EDITOR: '编辑者',
+  VIEWER: '查看者',
+};
 
 function formatSize(size: number) {
   if (size < 1024) return `${size} B`;
@@ -72,6 +123,17 @@ function statusMeta(status: string) {
       type: 'info' as const,
     }
   );
+}
+
+function applyRagToForm(config: RagConfig) {
+  ragForm.chunk_strategy = config.chunk_strategy || 'recursive';
+  ragForm.chunk_size = config.chunk_size;
+  ragForm.chunk_overlap = config.chunk_overlap;
+  ragForm.top_k = config.top_k;
+  ragForm.score_threshold = config.score_threshold;
+  ragForm.llm_model = config.llm_model || '';
+  ragForm.temperature = config.temperature;
+  ragForm.system_prompt = config.system_prompt || '';
 }
 
 async function loadKb() {
@@ -109,6 +171,7 @@ async function loadMembers() {
 async function loadRag() {
   try {
     rag.value = await getRagConfigApi(kbId.value);
+    if (rag.value) applyRagToForm(rag.value);
   } catch {
     rag.value = null;
   }
@@ -195,6 +258,74 @@ async function showFailReason(row: DocumentItem) {
     );
   } catch {
     // interceptor
+  }
+}
+
+function openAddMember() {
+  memberForm.user_id = '';
+  memberForm.role = 'VIEWER';
+  memberDialogVisible.value = true;
+}
+
+async function submitAddMember() {
+  const valid = await memberFormRef.value?.validate().catch(() => false);
+  if (!valid) return;
+  memberSaving.value = true;
+  try {
+    await addKbMemberApi(kbId.value, {
+      user_id: memberForm.user_id.trim(),
+      role: memberForm.role,
+    });
+    ElMessage.success('成员已添加');
+    memberDialogVisible.value = false;
+    await loadMembers();
+  } catch {
+    // interceptor
+  } finally {
+    memberSaving.value = false;
+  }
+}
+
+async function onRemoveMember(row: KbMember) {
+  try {
+    await ElMessageBox.confirm(
+      `移除成员「${row.user_id}」？\n移除后对方将无法访问此知识库。`,
+      '移除确认',
+      { type: 'warning' },
+    );
+  } catch {
+    return;
+  }
+  try {
+    await removeKbMemberApi(kbId.value, row.user_id);
+    ElMessage.success('已移除');
+    await loadMembers();
+  } catch {
+    // interceptor
+  }
+}
+
+async function saveRag() {
+  const valid = await ragFormRef.value?.validate().catch(() => false);
+  if (!valid) return;
+  ragSaving.value = true;
+  try {
+    rag.value = await updateRagConfigApi(kbId.value, {
+      chunk_strategy: ragForm.chunk_strategy,
+      chunk_size: ragForm.chunk_size,
+      chunk_overlap: ragForm.chunk_overlap,
+      top_k: ragForm.top_k,
+      score_threshold: ragForm.score_threshold,
+      llm_model: ragForm.llm_model || null,
+      temperature: ragForm.temperature,
+      system_prompt: ragForm.system_prompt || null,
+    });
+    if (rag.value) applyRagToForm(rag.value);
+    ElMessage.success('RAG 配置已保存');
+  } catch {
+    // interceptor
+  } finally {
+    ragSaving.value = false;
   }
 }
 
@@ -318,24 +449,103 @@ onUnmounted(() => stopPolling());
         </ElTabPane>
 
         <ElTabPane label="成员与权限" name="members">
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <div class="text-muted-foreground text-sm">
+              OWNER 可管理成员；EDITOR 可编辑；VIEWER 只读。一期暂无用户搜索，请填写用户
+              UUID。
+            </div>
+            <ElButton type="primary" @click="openAddMember">添加成员</ElButton>
+          </div>
           <ElTable :data="members" stripe>
             <ElTableColumn prop="user_id" label="用户 ID" min-width="260" />
-            <ElTableColumn prop="role" label="权限" width="120" />
+            <ElTableColumn label="权限" width="120">
+              <template #default="{ row }">
+                {{ roleLabel[row.role as KbMemberRole] || row.role }}
+              </template>
+            </ElTableColumn>
             <ElTableColumn prop="created_at" label="加入时间" min-width="180" />
+            <ElTableColumn label="操作" width="100" fixed="right">
+              <template #default="{ row }">
+                <ElButton link type="danger" @click="onRemoveMember(row)">
+                  移除
+                </ElButton>
+              </template>
+            </ElTableColumn>
           </ElTable>
         </ElTabPane>
 
         <ElTabPane label="RAG 配置" name="rag">
-          <div v-if="rag" class="max-w-xl space-y-2 text-sm">
-            <div>Chunk 策略：{{ rag.chunk_strategy }}</div>
-            <div>Chunk Size：{{ rag.chunk_size }}</div>
-            <div>Chunk Overlap：{{ rag.chunk_overlap }}</div>
-            <div>Top K：{{ rag.top_k }}</div>
-            <div>Temperature：{{ rag.temperature }}</div>
-            <div class="text-muted-foreground pt-2">
-              一期先只读展示；编辑表单后续迭代。
+          <ElForm
+            v-if="rag"
+            ref="ragFormRef"
+            :model="ragForm"
+            :rules="ragRules"
+            label-position="top"
+            class="max-w-xl"
+          >
+            <ElFormItem label="Chunk 策略" prop="chunk_strategy">
+              <ElInput v-model="ragForm.chunk_strategy" />
+            </ElFormItem>
+            <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
+              <ElFormItem label="Chunk Size (100–8000)" prop="chunk_size">
+                <ElInputNumber
+                  v-model="ragForm.chunk_size"
+                  :min="100"
+                  :max="8000"
+                  class="w-full"
+                />
+              </ElFormItem>
+              <ElFormItem label="Chunk Overlap (0–4000)" prop="chunk_overlap">
+                <ElInputNumber
+                  v-model="ragForm.chunk_overlap"
+                  :min="0"
+                  :max="4000"
+                  class="w-full"
+                />
+              </ElFormItem>
+              <ElFormItem label="Top K (1–50)" prop="top_k">
+                <ElInputNumber
+                  v-model="ragForm.top_k"
+                  :min="1"
+                  :max="50"
+                  class="w-full"
+                />
+              </ElFormItem>
+              <ElFormItem label="Temperature (0–2)" prop="temperature">
+                <ElInputNumber
+                  v-model="ragForm.temperature"
+                  :min="0"
+                  :max="2"
+                  :step="0.1"
+                  class="w-full"
+                />
+              </ElFormItem>
             </div>
-          </div>
+            <ElFormItem label="Score Threshold（可选）">
+              <ElInputNumber
+                v-model="ragForm.score_threshold"
+                :min="0"
+                :max="1"
+                :step="0.05"
+                clearable
+                class="w-full"
+              />
+            </ElFormItem>
+            <ElFormItem label="LLM Model（可选）">
+              <ElInput v-model="ragForm.llm_model" placeholder="留空使用系统默认" />
+            </ElFormItem>
+            <ElFormItem label="System Prompt（可选）">
+              <ElInput
+                v-model="ragForm.system_prompt"
+                type="textarea"
+                :rows="4"
+                placeholder="可选系统提示词"
+              />
+            </ElFormItem>
+            <ElButton type="primary" :loading="ragSaving" @click="saveRag">
+              保存配置
+            </ElButton>
+          </ElForm>
           <div v-else class="text-muted-foreground text-sm">暂无配置</div>
         </ElTabPane>
       </ElTabs>
@@ -361,6 +571,41 @@ onUnmounted(() => stopPolling());
           <ElButton @click="uploadVisible = false">取消</ElButton>
           <ElButton type="primary" :loading="uploading" @click="onUpload">
             开始上传
+          </ElButton>
+        </ElSpace>
+      </template>
+    </ElDialog>
+
+    <ElDialog v-model="memberDialogVisible" title="添加成员" width="440px">
+      <ElForm
+        ref="memberFormRef"
+        :model="memberForm"
+        :rules="memberRules"
+        label-position="top"
+      >
+        <ElFormItem label="用户 ID（UUID）" prop="user_id">
+          <ElInput
+            v-model="memberForm.user_id"
+            placeholder="例如从 /auth/me 获取的 id"
+          />
+        </ElFormItem>
+        <ElFormItem label="角色" prop="role">
+          <ElSelect v-model="memberForm.role" class="w-full">
+            <ElOption label="所有者 OWNER" value="OWNER" />
+            <ElOption label="编辑者 EDITOR" value="EDITOR" />
+            <ElOption label="查看者 VIEWER" value="VIEWER" />
+          </ElSelect>
+        </ElFormItem>
+      </ElForm>
+      <template #footer>
+        <ElSpace>
+          <ElButton @click="memberDialogVisible = false">取消</ElButton>
+          <ElButton
+            type="primary"
+            :loading="memberSaving"
+            @click="submitAddMember"
+          >
+            添加
           </ElButton>
         </ElSpace>
       </template>
