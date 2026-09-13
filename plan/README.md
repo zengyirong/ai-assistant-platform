@@ -23,7 +23,8 @@ AI智能助手平台_Phase0.5_UIUX设计_V1.md
 | [AI智能助手产品规划_V2.md](./AI智能助手产品规划_V2.md) | 产品范围、分期、DoD |
 | [v2-planning-review.md](./v2-planning-review.md) | 审查决议 R1–R6 |
 | [AI智能助手平台_Phase0_系统设计_V1.md](./AI智能助手平台_Phase0_系统设计_V1.md) | 架构 / 数据 / API / ADR |
-| [AI智能助手平台_Phase0.5_UIUX设计_V1.md](./AI智能助手平台_Phase0.5_UIUX设计_V1.md) | 一期 IA / 页面 / 交互 |
+| [plan/AI智能助手平台_Phase0.5_UIUX设计_V1.md](./AI智能助手平台_Phase0.5_UIUX设计_V1.md) | 一期 IA / 页面 / 交互 |
+| [phase0.5-uiux-review.md](./phase0.5-uiux-review.md) | Phase 0.5 审查纪要（通过，带条件） |
 
 ## 与 `docs/` 的分工
 

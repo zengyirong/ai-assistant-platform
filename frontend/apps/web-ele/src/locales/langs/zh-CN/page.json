@@ -10,5 +10,14 @@
   "dashboard": {
     "title": "概览",
     "home": "首页"
+  },
+  "chat": {
+    "title": "智能问答",
+    "workspace": "问答工作台"
+  },
+  "knowledge": {
+    "title": "知识库",
+    "manage": "知识库管理",
+    "detail": "知识库详情"
   }
 }

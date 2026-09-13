@@ -10,5 +10,14 @@
   "dashboard": {
     "title": "Dashboard",
     "home": "Home"
+  },
+  "chat": {
+    "title": "AI Chat",
+    "workspace": "Chat Workspace"
+  },
+  "knowledge": {
+    "title": "Knowledge",
+    "manage": "Knowledge Bases",
+    "detail": "Knowledge Detail"
   }
 }

@@ -11,6 +11,7 @@
 | [plan/v2-planning-review.md](./plan/v2-planning-review.md) | 审查决议闭环 |
 | [plan/AI智能助手平台_Phase0_系统设计_V1.md](./plan/AI智能助手平台_Phase0_系统设计_V1.md) | Phase 0 系统设计 |
 | [plan/AI智能助手平台_Phase0.5_UIUX设计_V1.md](./plan/AI智能助手平台_Phase0.5_UIUX设计_V1.md) | Phase 0.5 UI/UX |
+| [plan/phase0.5-uiux-review.md](./plan/phase0.5-uiux-review.md) | Phase 0.5 审查纪要 |
 | [plan/README.md](./plan/README.md) | 规划文档索引 |
 | [docs/database.md](./docs/database.md) | 数据库设计 V1 |
 | [docs/api.md](./docs/api.md) | API + Error / 鉴权矩阵 |
