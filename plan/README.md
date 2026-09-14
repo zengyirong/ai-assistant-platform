@@ -17,7 +17,7 @@ phase0.5-uiux-review.md
         ↓
 ../docs/*（DDL / API / SSE）
         ↓
-M1 总结 / Bugs → M2 → M3 工程化 → M4 体验与治理 → M5 可追溯
+M1 总结 / Bugs → M2 → M3 → M4 → M5 可追溯 → M6 一期收口
 ```
 
 ## 索引
@@ -43,7 +43,9 @@ M1 总结 / Bugs → M2 → M3 工程化 → M4 体验与治理 → M5 可追溯
 | [milestone-M3-completion.md](./milestone-M3-completion.md) | **M3 完成说明（验收通过）** |
 | [milestone-M4-next-goals.md](./milestone-M4-next-goals.md) | M4 目标与 DoD（已达成） |
 | [milestone-M4-completion.md](./milestone-M4-completion.md) | **M4 完成说明（验收通过；含 B14 补丁说明）** |
-| [milestone-M5-next-goals.md](./milestone-M5-next-goals.md) | **M5 可追溯与运维增强（进行中）** |
+| [milestone-M5-next-goals.md](./milestone-M5-next-goals.md) | M5 目标与 DoD（已达成） |
+| [milestone-M5-completion.md](./milestone-M5-completion.md) | **M5 完成说明（验收通过）** |
+| [milestone-M6-next-goals.md](./milestone-M6-next-goals.md) | 下一里程碑：一期收口 |
 
 ## 与 `docs/` 的分工
 

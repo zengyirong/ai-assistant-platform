@@ -94,7 +94,7 @@ docs: 归档 M4/M5 联调 Bugs B13/B14
 
 ## 7. 下一步
 
-→ **[里程碑 M5 — 可追溯与运维增强](./milestone-M5-next-goals.md)**（进行中）  
+→ **[里程碑 M5 — 可追溯](./milestone-M5-completion.md)**（已验收）→ 下一刀见 [M6 一期收口](./milestone-M6-next-goals.md)。  
 → Bugs：[milestone-M4-M5-bugs-and-fixes.md](./milestone-M4-M5-bugs-and-fixes.md)
 
 ---
