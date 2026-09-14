@@ -1,9 +1,11 @@
-# 里程碑 M6 — 下一目标规划（一期收口）
+# 里程碑 M6 — 目标规划（一期收口）
 
 > 前置：[M5 完成说明](./milestone-M5-completion.md) 已验收  
+> 完成说明：[milestone-M6-completion.md](./milestone-M6-completion.md)  
+> 交接入口：[phase1-handoff.md](./phase1-handoff.md)  
 > 依据：产品规划 V2 §P1 余量、M5 Should、一期 DoD「可交接」  
 > 日期：2026-09-14  
-> 状态：**进行中**
+> 状态：**已完成**
 
 ---
 
@@ -15,16 +17,17 @@
 
 ## 2. Must（必须）
 
-1. **一期交接说明**（文档）→ [`phase1-handoff.md`](./phase1-handoff.md)
-2. **回归确认** → `ruff` + `pytest`
+1. **一期交接说明**（文档）→ [`phase1-handoff.md`](./phase1-handoff.md) ✅  
+2. **回归确认** → `ruff` + `pytest` ✅  
 
 ---
 
 ## 3. Should（本里程碑已选）
 
-- [x] 同 org 创建 USER 薄 API（`POST /api/v1/users`，ADMIN）
-- [x] Golden Dataset：离线 keyword 排序断言 + 多样本
-- [ ] Citation / 会话边角小修（未选，结转后续）
+- [x] 同 org 创建 USER 薄 API（`POST /api/v1/users`，ADMIN）  
+- [x] Golden Dataset：离线 keyword 排序断言 + 多样本  
+- [x] Seed 固定演示账号 `demo` / `Demo@123456`  
+- [ ] Citation / 会话边角小修（未选，结转后续）  
 
 ---
 
@@ -36,13 +39,13 @@
 
 ---
 
-## 5. 退出标准（草案）
+## 5. 退出标准
 
 ```text
 ☑ 交接/演示说明落盘（plan/phase1-handoff.md）
-□ 主路径回归通过
+☑ 主路径回归通过
 ☑ （可选）选定的 Should 项完成
-□ plan 完成说明
+☑ plan 完成说明
 ```
 
 ---
@@ -53,3 +56,4 @@
 |---|---|
 | 2026-09-14 | 初版：M5 验收后的一期收口里程碑 |
 | 2026-09-14 | 启动：handoff + USER create + Golden 增强 |
+| 2026-09-14 | 验收通过并固化；见 completion |

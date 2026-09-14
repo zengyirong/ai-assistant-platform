@@ -10,7 +10,7 @@
 
 | 项 | 值 |
 |---|---|
-| 演示登录 | `admin` / `Admin@123456`（seed 后） |
+| 演示登录 | `admin` / `Admin@123456`（ADMIN）；`demo` / `Demo@123456`（USER） |
 | 后端 | `http://127.0.0.1:8000`（`uvicorn … --port 8000`） |
 | 前端 | 通常 `http://localhost:5777`（`pnpm run dev:ele`） |
 | 健康检查 | `GET /health`、`GET /ready`（MySQL + Qdrant） |
@@ -96,4 +96,4 @@ CI：`.github/workflows/backend-ci.yml`
 | ID | 文档 |
 |---|---|
 | M1–M5 | `plan/milestone-M*-completion.md` |
-| M6 | 验收后写 `milestone-M6-completion.md` |
+| M6 | [milestone-M6-completion.md](./milestone-M6-completion.md)（已验收） |

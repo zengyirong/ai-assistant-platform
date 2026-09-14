@@ -43,7 +43,7 @@ pnpm install
 pnpm run dev:ele
 ```
 
-默认登录（真实后端种子）：`admin` / `Admin@123456`
+默认登录（真实后端种子）：`admin` / `Admin@123456`（ADMIN）；`demo` / `Demo@123456`（USER）
 
 前端请求：`/api/*` → Vite 代理 → `http://127.0.0.1:8000/api/v1/*`
 

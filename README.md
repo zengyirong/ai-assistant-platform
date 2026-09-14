@@ -29,7 +29,7 @@
 - [x] Phase 1：Auth + KB / Document / RAG / Citation / SSE（M1）
 - [x] Phase 1：PDF/DOCX（M2）+ Alembic/CI（M3）+ 体验（M4）+ 审计（M5）
 - [x] 前端对接真实后端（知识库 / 文档 / Chat / 审计）
-- [ ] **M6 一期收口**（交接说明进行中；见 `plan/phase1-handoff.md`）
+- [x] **M6 一期收口**（交接说明 + USER/Golden；见 `plan/milestone-M6-completion.md` / `plan/phase1-handoff.md`）
 
 ## 本地启动
 

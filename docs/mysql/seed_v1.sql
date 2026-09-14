@@ -1,13 +1,16 @@
 -- AI Assistant Platform — Seed V1 (local/dev)
 -- Requires: ddl_v1.sql already applied
 -- Password placeholder: replace password_hash before production use.
--- Demo admin password plaintext for local only: Admin@123456
+-- Demo passwords (local only):
+--   admin / Admin@123456  (ADMIN)
+--   demo  / Demo@123456   (USER)
 -- bcrypt hash generated via app.core.security.hash_password
 
 USE ai_assistant;
 
 SET @org_id   = '11111111-1111-1111-1111-111111111111';
 SET @admin_id = '22222222-2222-2222-2222-222222222222';
+SET @demo_id  = '77777777-7777-7777-7777-777777777777';
 SET @role_admin = '33333333-3333-3333-3333-333333333333';
 SET @role_user  = '44444444-4444-4444-4444-444444444444';
 SET @space_id = '55555555-5555-5555-5555-555555555555';
@@ -70,12 +73,35 @@ INSERT INTO sys_user_role (id, user_id, role_id)
 VALUES (UUID(), @admin_id, @role_admin)
 ON DUPLICATE KEY UPDATE user_id = VALUES(user_id);
 
+-- bcrypt for Demo@123456 (cost 12) — ordinary USER for member demos
+INSERT INTO sys_user (id, org_id, username, password_hash, nickname, email, status)
+VALUES (
+  @demo_id,
+  @org_id,
+  'demo',
+  '$2b$12$uXq19TZ9Er1ugw7vJqDwCuVITN9f49gthJWVbr1Z3CLJ9uN1lac.m',
+  'Demo User',
+  'demo@example.com',
+  'ACTIVE'
+)
+ON DUPLICATE KEY UPDATE
+  password_hash = VALUES(password_hash),
+  nickname = VALUES(nickname);
+
+INSERT INTO sys_user_role (id, user_id, role_id)
+VALUES (UUID(), @demo_id, @role_user)
+ON DUPLICATE KEY UPDATE user_id = VALUES(user_id);
+
 INSERT INTO space (id, org_id, name, description, is_default, owner_id)
 VALUES (@space_id, @org_id, '默认空间', 'Organization default space', 1, @admin_id)
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 INSERT INTO space_member (id, space_id, user_id, role)
 VALUES (UUID(), @space_id, @admin_id, 'OWNER')
+ON DUPLICATE KEY UPDATE role = VALUES(role);
+
+INSERT INTO space_member (id, space_id, user_id, role)
+VALUES (UUID(), @space_id, @demo_id, 'MEMBER')
 ON DUPLICATE KEY UPDATE role = VALUES(role);
 
 -- Align embedding_dimension with real model before indexing vectors

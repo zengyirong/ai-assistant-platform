@@ -43,13 +43,13 @@
 
 ---
 
-## 4. Should 未做（结转 M6 / 一期收口）
+## 4. Should 未做（已结转 M6）
 
 | 项 | 说明 |
 |---|---|
-| Citation / 会话边角 | 角标与侧栏一致性等小修 |
-| Golden Dataset 增强 | 检索离线断言雏形 |
-| 同 org 建 USER 薄 API | 成员协作演示刚需时可做 |
+| Citation / 会话边角 | 仍结转后续（M6 未选） |
+| Golden Dataset 增强 | **M6 已做** |
+| 同 org 建 USER 薄 API | **M6 已做** |
 
 ---
 
@@ -74,7 +74,7 @@ docs: 固化 M5 验收完成说明并规划一期收口 M6
 
 ## 7. 下一步
 
-→ **[里程碑 M6 — 一期收口](./milestone-M6-next-goals.md)**：可选薄能力（建 USER / Golden）+ 交接说明；或暂停功能、稳演示。
+→ 一期已收口，见 **[M6 完成说明](./milestone-M6-completion.md)** 与 **[交接说明](./phase1-handoff.md)**。
 
 一期产品规划 **P0 + P1（Audit/工程化/体验）** 主线已齐；**P2**（Redis/Celery/MinIO/OCR…）仍后置。
 

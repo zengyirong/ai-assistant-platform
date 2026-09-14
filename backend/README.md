@@ -99,6 +99,11 @@ CI (GitHub Actions): `.github/workflows/backend-ci.yml` runs ruff + Alembic + se
 | `QDRANT_URL` | On Windows, system HTTP proxy can break local Qdrant — clients use `trust_env=False` |
 | Secrets | Keep `.env` out of git; restart uvicorn fully after provider/dim changes |
 
-Demo login (after seed): `admin` / `Admin@123456`
+Demo logins (after seed):
 
-ADMIN may create same-org USER accounts via `POST /api/v1/users` (see `docs/api.md` §4.1.1) for member demos without SQL.
+| User | Password | Role |
+|---|---|---|
+| `admin` | `Admin@123456` | ADMIN |
+| `demo` | `Demo@123456` | USER |
+
+ADMIN may also create more same-org USER accounts via `POST /api/v1/users` (see `docs/api.md` §4.1.1).
