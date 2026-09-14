@@ -13,6 +13,7 @@
 | [plan/AI智能助手平台_Phase0.5_UIUX设计_V1.md](./plan/AI智能助手平台_Phase0.5_UIUX设计_V1.md) | Phase 0.5 UI/UX |
 | [plan/phase0.5-uiux-review.md](./plan/phase0.5-uiux-review.md) | Phase 0.5 审查纪要 |
 | [plan/README.md](./plan/README.md) | 规划文档索引 |
+| [plan/phase1-handoff.md](./plan/phase1-handoff.md) | **一期交接 / 演示说明** |
 | [docs/database.md](./docs/database.md) | 数据库设计 V1 |
 | [docs/api.md](./docs/api.md) | API + Error / 鉴权矩阵 |
 | [docs/openapi-v1.yaml](./docs/openapi-v1.yaml) | OpenAPI 3.1 |
@@ -25,14 +26,10 @@
 
 - [x] 产品规划 V2 / Phase 0 / DDL / API / SSE / Compose
 - [x] 仓库脚手架（FastAPI + Vben web-ele 精简）
-- [x] Phase 1：Auth（login / me / logout + JWT）+ 核心 RBAC Models
-- [x] Phase 1：Knowledge Base CRUD / Members / RAG Config
-- [x] Phase 1：Document 上传 / Job 状态机骨架（txt/md 可走通）
-- [x] Phase 1：Embedding + Qdrant Index（默认 fake embedding；可切真实 API）
-- [x] Phase 1：RAG / Citation / SSE Chat（fake LLM 可离线跑通）
-- [x] 前端对接真实后端（关闭 Nitro mock，Auth 联调）
-- [ ] Phase 1：PDF/DOCX 解析
-- [ ] 前端知识库 / 文档 / Chat UI
+- [x] Phase 1：Auth + KB / Document / RAG / Citation / SSE（M1）
+- [x] Phase 1：PDF/DOCX（M2）+ Alembic/CI（M3）+ 体验（M4）+ 审计（M5）
+- [x] 前端对接真实后端（知识库 / 文档 / Chat / 审计）
+- [ ] **M6 一期收口**（交接说明进行中；见 `plan/phase1-handoff.md`）
 
 ## 本地启动
 

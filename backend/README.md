@@ -100,3 +100,5 @@ CI (GitHub Actions): `.github/workflows/backend-ci.yml` runs ruff + Alembic + se
 | Secrets | Keep `.env` out of git; restart uvicorn fully after provider/dim changes |
 
 Demo login (after seed): `admin` / `Admin@123456`
+
+ADMIN may create same-org USER accounts via `POST /api/v1/users` (see `docs/api.md` §4.1.1) for member demos without SQL.

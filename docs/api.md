@@ -39,6 +39,7 @@
 | 404 | `CONVERSATION_NOT_FOUND` | 会话不存在或不属于当前用户 | Conversation |
 | 409 | `DOCUMENT_DUPLICATED` | 同 KB 内 `file_hash` 冲突 | Upload |
 | 409 | `SPACE_NAME_CONFLICT` | 同 org 下空间名冲突（可选） | Space create/update |
+| 409 | `USER_NAME_CONFLICT` | 用户名已存在 | User create |
 | 422 | `DOCUMENT_FORMAT_INVALID` | 扩展名 / MIME 不在白名单 | Upload |
 | 422 | `DOCUMENT_TOO_LARGE` | 超过大小限制 | Upload |
 | 422 | `DOCUMENT_PARSE_FAILED` | 解析任务失败（查询 job 或 retry 结果） | Document / Job |
@@ -65,6 +66,7 @@ SSE 路径上的业务错误通过 `event: error` 下发，`data.code` 使用上
 | POST | `/api/v1/auth/logout` | 是 | — | — |
 | GET | `/api/v1/auth/me` | 是 | — | — |
 | GET | `/api/v1/users` | 是 | — | 本 org ACTIVE 用户（`q` 搜 username/nickname） |
+| POST | `/api/v1/users` | 是 | — | **ADMIN**；同 org 创建 `USER`（薄接口，非完整用户管理） |
 | GET | `/api/v1/audit-logs` | 是 | — | **ADMIN**；本 org；可选 `action` / `user_id` |
 | GET | `/api/v1/spaces` | 是 | — | 本 org 可见 space |
 | POST | `/api/v1/spaces` | 是 | — | 本 org |
@@ -129,12 +131,27 @@ ADMIN：当前 org 全部
 - `q` 可选，匹配 `username` / `nickname`（模糊）
 - `data.items[]`: `{ id, username, nickname, status }`
 
+**POST `/api/v1/users`**（ADMIN）
+
+```json
+// request
+{ "username": "alice", "password": "User@123456", "nickname": "Alice" }
+
+// data
+{ "id", "username", "nickname", "status": "ACTIVE" }
+```
+
+- 仅 `ADMIN`；新用户归属当前 org，绑定 `USER` 角色
+- 用户名：3–32 位字母/数字/下划线；一期登录按全局用户名查找，故全局唯一
+- 冲突：`USER_NAME_CONFLICT`（409）
+- 审计：`user.create`
+
 ### 4.1.2 Audit Logs（ADMIN）
 
 **GET `/api/v1/audit-logs?page=&page_size=&action=&user_id=`**
 
 - 仅 `ADMIN`；限定当前 org
-- 写入动作（best-effort，失败不阻断业务）：`auth.login` / `auth.logout` / `document.upload` / `document.delete` / `document.retry` / `kb.member.upsert` / `kb.member.remove`
+- 写入动作（best-effort，失败不阻断业务）：`auth.login` / `auth.logout` / `document.upload` / `document.delete` / `document.retry` / `kb.member.upsert` / `kb.member.remove` / `user.create`
 - `result`: `SUCCESS` / `FAILED` / `DENIED`
 - `data.items[]`: `{ id, org_id, user_id, action, resource_type, resource_id, request_id, result, ip, user_agent, detail, created_at }`
 

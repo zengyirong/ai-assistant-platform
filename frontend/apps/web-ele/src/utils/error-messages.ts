@@ -11,6 +11,7 @@ export const API_ERROR_MESSAGES: Record<string, string> = {
   CONVERSATION_NOT_FOUND: '会话不存在',
   DOCUMENT_DUPLICATED: '同知识库已存在相同文件，请勿重复上传',
   SPACE_NAME_CONFLICT: '空间名称冲突',
+  USER_NAME_CONFLICT: '用户名已存在',
   DOCUMENT_FORMAT_INVALID: '不支持的文件格式，请上传 PDF / DOCX / TXT / MD',
   DOCUMENT_TOO_LARGE: '文件过大，超出上传限制',
   DOCUMENT_PARSE_FAILED: '文档解析失败，请检查文件后重试',

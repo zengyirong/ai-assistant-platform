@@ -4,6 +4,7 @@
     "file_type": "md",
     "question": "年假最长可以请几天？",
     "must_contain": ["年假", "15"],
+    "min_chunks": 1,
     "content": "# 休假制度\n\n员工入职满一年可享有年假，最长可申请 15 天。\n病假需提供医院证明。\n"
   },
   {
@@ -11,6 +12,17 @@
     "file_type": "txt",
     "question": "差旅报销需要哪些材料？",
     "must_contain": ["发票", "行程单"],
+    "min_chunks": 1,
     "content": "差旅报销须提交发票与行程单，超标部分自理。\n提交后三个工作日内审批。\n"
+  },
+  {
+    "id": "onboarding-long-md",
+    "file_type": "md",
+    "question": "新员工入职第一天要带什么？",
+    "must_contain": ["身份证", "劳动合同"],
+    "min_chunks": 2,
+    "chunk_size": 80,
+    "chunk_overlap": 20,
+    "content": "# 入职须知\n\n新员工入职第一天请携带身份证原件与复印件，并签署劳动合同。\n人事将安排工卡办理与邮箱开通。\n办公用品由行政部门统一发放，请勿自行采购。\n试用期三个月，转正需直属主管评估。\n"
   }
 ]
