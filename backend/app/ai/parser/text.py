@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from app.ai.parser.base import ParseResult, ParsedSegment
+from app.ai.parser.base import ParsedSegment, ParseResult
 from app.ai.parser.errors import DocumentParseError
 
 

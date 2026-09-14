@@ -1,4 +1,11 @@
-from app.schemas.sse import make_citation, make_done, make_error, make_start, make_text, SseCitationItem
+from app.schemas.sse import (
+    SseCitationItem,
+    make_citation,
+    make_done,
+    make_error,
+    make_start,
+    make_text,
+)
 
 
 def test_sse_seq_helpers() -> None:

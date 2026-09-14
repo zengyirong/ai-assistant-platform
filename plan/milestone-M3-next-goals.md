@@ -2,7 +2,8 @@
 
 > 前置： [M2 完成说明](./milestone-M2-completion.md) 已验收  
 > 依据：产品规划 V2 §P1、Phase 0 ADR-008、M1/M2 遗留工程债  
-> 日期：2026-09-14
+> 日期：2026-09-14  
+> 状态：**实现完成，待验收**
 
 ---
 
@@ -15,22 +16,21 @@
 ## 2. Must（必须）
 
 1. **Alembic**
-   - 基于当前 Models 生成初始 revision（或对齐 `docs/mysql/ddl_v1.sql`）
-   - 文档约定：新环境以 `alembic upgrade head` 为准；手工 DDL 仅作参考  
+   - [x] 初始 revision `20260914_0001`（对齐 `docs/mysql/ddl_v1.sql`）
+   - [x] 文档约定：新环境以 `alembic upgrade head` 为准；手工 DDL 仅作参考  
 2. **核心自动化测试**
-   - 现有 unit/api 测试可在无真实 LLM Key 下跑通（fake 默认）  
-   - Parser / Auth / KB 冒烟稳定  
+   - [x] conftest 强制 `LLM_PROVIDER` / `EMBEDDING_PROVIDER=fake`
+   - [x] Parser / unit + Auth/KB API 冒烟（CI 内带 MySQL）  
 3. **CI 最小流水线**
-   - 例如：lint（ruff）+ pytest（backend）  
-   - 不强制调用付费 Embedding/LLM  
+   - [x] `.github/workflows/backend-ci.yml`：ruff + alembic + seed + pytest  
 
 ---
 
 ## 3. Should
 
-- Golden Dataset 起步（少量问答样例 + 离线/fake 断言）  
-- `message_citation` FK 改为 `ON DELETE CASCADE`（迁移修订，替代纯应用层清理）  
-- `/ready` 与本地 Runbook 写进 `backend/README`  
+- [x] Golden Dataset 起步（`tests/rag_eval/`）  
+- [x] `message_citation` FK → `ON DELETE CASCADE`（revision `20260914_0002`）  
+- [x] `/ready` 与本地 Runbook 写入 `backend/README`  
 
 ---
 
@@ -45,10 +45,20 @@
 ## 5. 退出标准
 
 ```text
-□ 新库仅靠 Alembic 可建到与现网一致的主表结构
-□ CI 对 main/PR 跑通基础测试
-□ README 写清：启动、迁移、测试、.env 注意点
-□ M2 能力（PDF/DOCX）不被回归破坏
+☑ 新库仅靠 Alembic 可建到与现网一致的主表结构
+☑ CI 对 main/PR 跑通基础测试（workflow 已就位）
+☑ README 写清：启动、迁移、测试、.env 注意点
+☑ M2 能力（PDF/DOCX）不被回归破坏（parsers 单测 + golden smoke）
+```
+
+本地验收建议：
+
+```bash
+cd backend
+alembic stamp 20260914_0001   # 若库已由 DDL 建好
+alembic upgrade head
+ruff check .
+pytest -q
 ```
 
 ---
@@ -58,3 +68,4 @@
 | 日期 | 内容 |
 |---|---|
 | 2026-09-14 | 初版：M2 验收后的下一里程碑 |
+| 2026-09-14 | 落地 Alembic / CI / fake 测试 / README / citation CASCADE |

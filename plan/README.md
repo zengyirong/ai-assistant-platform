@@ -38,7 +38,7 @@ M1 总结 / Bugs → M2 目标 / 完成说明 → M3 工程化
 | [milestone-M1-deep-summary.md](./milestone-M1-deep-summary.md) | 审查→真实 RAG 主路径可演示：深度总结 |
 | [milestone-M2-next-goals.md](./milestone-M2-next-goals.md) | M2 目标与 DoD（已达成） |
 | [milestone-M2-completion.md](./milestone-M2-completion.md) | **M2 完成说明（验收通过）** |
-| [milestone-M3-next-goals.md](./milestone-M3-next-goals.md) | 下一里程碑：工程化（Alembic / CI / 测试） |
+| [milestone-M3-next-goals.md](./milestone-M3-next-goals.md) | **M3 工程化（进行中）**：Alembic / CI / 测试 |
 
 ## 与 `docs/` 的分工
 

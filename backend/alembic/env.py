@@ -1,29 +1,34 @@
-"""Alembic migration environment (async-ready stub)."""
+"""Alembic migration environment (async)."""
 
 from __future__ import annotations
 
 import asyncio
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.ext.asyncio import create_async_engine
 
+import app.models  # noqa: F401 — register mappers
+from alembic import context
 from app.core.config import settings
 from app.db.base import Base
-import app.models  # noqa: F401 — register mappers
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
-config.set_main_option("sqlalchemy.url", settings.database_url)
+
+# Percent-encoded passwords break ConfigParser interpolation; escape % → %%.
+config.set_main_option(
+    "sqlalchemy.url",
+    settings.database_url.replace("%", "%%"),
+)
 
 
 def run_migrations_offline() -> None:
-    url = config.get_main_option("sqlalchemy.url")
+    url = settings.database_url
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -41,9 +46,8 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+    connectable = create_async_engine(
+        settings.database_url,
         poolclass=pool.NullPool,
     )
     async with connectable.connect() as connection:

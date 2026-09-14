@@ -1,13 +1,13 @@
 """Application entrypoint."""
 
-from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.router import api_router
 from app.api.health import router as health_router
+from app.api.router import api_router
 from app.core.config import settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import setup_logging

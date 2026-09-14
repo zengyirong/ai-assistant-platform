@@ -35,7 +35,7 @@ def _make_docx_bytes(*, paragraphs: list[str], heading: str | None = None) -> by
 
 
 def test_parse_markdown() -> None:
-    raw = "# Title\n\nHello parser.\n".encode("utf-8")
+    raw = b"# Title\n\nHello parser.\n"
     result = parse_document_bytes(raw, file_type="md")
     assert result.page_count == 1
     assert "Hello parser" in result.segments[0].text

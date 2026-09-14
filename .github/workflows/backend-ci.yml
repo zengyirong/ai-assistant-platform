@@ -1,0 +1,84 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - "docs/mysql/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - "docs/mysql/**"
+      - ".github/workflows/backend-ci.yml"
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ai_assistant
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+      qdrant:
+        image: qdrant/qdrant:v1.13.2
+        ports:
+          - 6333:6333
+
+    env:
+      APP_ENV: test
+      APP_SECRET: ci-secret
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ai_assistant
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      QDRANT_URL: http://127.0.0.1:6333
+      QDRANT_COLLECTION: knowledge_chunks_ci
+      LLM_PROVIDER: fake
+      EMBEDDING_PROVIDER: fake
+      EMBEDDING_DIMENSION: 32
+      FILE_STORAGE_PATH: ./data/files-ci
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: Install backend
+        run: pip install -e ".[dev]"
+
+      - name: Install MySQL client
+        working-directory: .
+        run: sudo apt-get update && sudo apt-get install -y default-mysql-client
+
+      - name: Ruff
+        run: ruff check .
+
+      - name: Alembic upgrade
+        run: alembic upgrade head
+
+      - name: Seed demo data
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -uroot -proot ai_assistant \
+            --default-character-set=utf8mb4 < ../docs/mysql/seed_v1.sql
+
+      - name: Pytest
+        run: pytest -q

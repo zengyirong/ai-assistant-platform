@@ -66,10 +66,12 @@ class MessageCitation(Base, UUIDPrimaryKeyMixin):
         nullable=False,
     )
     document_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("document.id"), nullable=False
+        String(36), ForeignKey("document.id", ondelete="CASCADE"), nullable=False
     )
     chunk_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("document_chunk.id"), nullable=False
+        String(36),
+        ForeignKey("document_chunk.id", ondelete="CASCADE"),
+        nullable=False,
     )
     page: Mapped[int | None] = mapped_column(Integer)
     section: Mapped[str | None] = mapped_column(String(255))

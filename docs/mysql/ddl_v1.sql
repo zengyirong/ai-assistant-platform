@@ -1,6 +1,11 @@
 -- AI Assistant Platform — MySQL DDL V1
 -- Charset: utf8mb4 | Engine: InnoDB
 -- Source: Phase0 系统设计 + v2-planning-review R1–R6
+--
+-- Prefer Alembic for new environments:
+--   cd backend && alembic upgrade head
+--   then apply seed_v1.sql
+-- This file is a readable reference and Docker MySQL init fallback.
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -372,10 +377,13 @@ CREATE TABLE message_citation (
   CONSTRAINT fk_citation_message
     FOREIGN KEY (message_id) REFERENCES conversation_message (id) ON DELETE CASCADE,
   CONSTRAINT fk_citation_document
-    FOREIGN KEY (document_id) REFERENCES document (id),
+    FOREIGN KEY (document_id) REFERENCES document (id) ON DELETE CASCADE,
   CONSTRAINT fk_citation_chunk
-    FOREIGN KEY (chunk_id) REFERENCES document_chunk (id)
+    FOREIGN KEY (chunk_id) REFERENCES document_chunk (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- NOTE: Prefer Alembic for new environments (`alembic upgrade head`).
+-- This file remains a readable reference / Docker MySQL init fallback.
 
 -- ---------------------------------------------------------------------------
 -- audit_log

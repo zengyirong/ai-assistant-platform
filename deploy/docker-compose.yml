@@ -36,6 +36,7 @@ services:
       - "3307:3306"
     volumes:
       - aap_mysql_data:/var/lib/mysql
+      # Fallback init only; prefer `alembic upgrade head` for new envs
       - ../docs/mysql/ddl_v1.sql:/docker-entrypoint-initdb.d/01_ddl.sql:ro
       - ../docs/mysql/seed_v1.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
     command:

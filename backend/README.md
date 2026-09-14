@@ -1,6 +1,6 @@
 # Backend — AI Assistant Platform
 
-FastAPI scaffold aligned with Phase 0.
+FastAPI backend for knowledge base + RAG chat (Phase 0 / M1–M3).
 
 ## Layout
 
@@ -10,12 +10,12 @@ app/
   core/         # config, errors, logging, middleware
   db/           # SQLAlchemy async engine
   schemas/      # Pydantic (incl. SSE V1)
-  models/       # ORM (Phase 1)
-  modules/      # application services (Phase 1)
-  ai/           # LLM / Embedding / VectorStore interfaces
+  models/       # ORM
+  modules/      # application services
+  ai/           # LLM / Embedding / VectorStore / parsers
   domains/      # hospital / hr placeholders
-alembic/        # migrations (models first, then autogenerate)
-tests/
+alembic/        # schema migrations (source of truth for new envs)
+tests/          # unit + API smoke (+ rag_eval golden smoke)
 ```
 
 ## Setup
@@ -27,19 +27,43 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -e ".[dev]"
 cp ../.env.example ../.env
+# Edit ../.env: MYSQL_PASSWORD, and optionally real LLM/Embedding keys
 ```
 
-Start MySQL + Qdrant:
+Dependencies (MySQL on host by default; Qdrant via Compose):
 
 ```bash
 docker compose -f ../deploy/docker-compose.yml up -d
 ```
 
-Run API:
+### Database: Alembic first
+
+**New empty database** (create schema `ai_assistant` first):
 
 ```bash
-uvicorn app.main:app --reload --app-dir .
-# or from backend/:
+# MySQL: CREATE DATABASE ai_assistant ...;
+cd backend
+alembic upgrade head
+mysql -h 127.0.0.1 -u root -p ai_assistant < ../docs/mysql/seed_v1.sql
+```
+
+**Existing database** already created from `docs/mysql/ddl_v1.sql`:
+
+```bash
+# Mark baseline without re-creating tables
+alembic stamp 20260914_0001
+# Apply later revisions (e.g. citation ON DELETE CASCADE)
+alembic upgrade head
+```
+
+If the DB was rebuilt from the latest DDL (already includes citation CASCADE), you may `alembic stamp head` instead.
+
+`docs/mysql/ddl_v1.sql` remains a readable reference / Docker MySQL init fallback — **prefer Alembic for new environments**.
+
+### Run API
+
+```bash
+cd backend
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
@@ -47,12 +71,32 @@ Checks:
 
 ```bash
 curl http://127.0.0.1:8000/health
-pytest
-ruff check .
+curl http://127.0.0.1:8000/ready
 ```
 
-## Notes
+`/ready` probes MySQL + Qdrant. Local demo: start Qdrant via Compose; MySQL must accept credentials from `.env`.
 
-- Schema bootstrap: Compose applies `docs/mysql/ddl_v1.sql` + seed on first MySQL start.
-- Alembic is prepared; create SQLAlchemy models before `alembic revision --autogenerate`.
-- Auth endpoints are stubs until Phase 1 Auth module.
+### Tests & lint
+
+Providers are forced to **fake** in `tests/conftest.py` so pytest never calls paid APIs even if `.env` has real keys.
+
+```bash
+cd backend
+ruff check .
+pytest                 # needs MySQL + seed + Qdrant for API tests
+pytest tests/unit tests/rag_eval -q   # no MySQL required
+```
+
+CI (GitHub Actions): `.github/workflows/backend-ci.yml` runs ruff + Alembic + seed + pytest with MySQL/Qdrant services and `LLM_PROVIDER=fake` / `EMBEDDING_PROVIDER=fake`.
+
+### .env notes
+
+| Variable | Notes |
+|---|---|
+| `LLM_PROVIDER` / `EMBEDDING_PROVIDER` | Default `fake` for offline; `openai_compatible` for real APIs |
+| `EMBEDDING_DIMENSION` | Must match Qdrant collection; changing dim → new `QDRANT_COLLECTION` + re-index |
+| `EMBEDDING_BATCH_SIZE` | Aliyun DashScope v3/v4 max **10** |
+| `QDRANT_URL` | On Windows, system HTTP proxy can break local Qdrant — clients use `trust_env=False` |
+| Secrets | Keep `.env` out of git; restart uvicorn fully after provider/dim changes |
+
+Demo login (after seed): `admin` / `Admin@123456`

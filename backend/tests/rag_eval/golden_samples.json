@@ -1,0 +1,16 @@
+[
+  {
+    "id": "leave-policy-md",
+    "file_type": "md",
+    "question": "年假最长可以请几天？",
+    "must_contain": ["年假", "15"],
+    "content": "# 休假制度\n\n员工入职满一年可享有年假，最长可申请 15 天。\n病假需提供医院证明。\n"
+  },
+  {
+    "id": "expense-txt",
+    "file_type": "txt",
+    "question": "差旅报销需要哪些材料？",
+    "must_contain": ["发票", "行程单"],
+    "content": "差旅报销须提交发票与行程单，超标部分自理。\n提交后三个工作日内审批。\n"
+  }
+]

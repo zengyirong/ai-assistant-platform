@@ -16,7 +16,7 @@ from app.ai.storage import get_file_storage
 from app.ai.vectorstore import get_vector_store
 from app.core.errors import AppError
 from app.db.session import AsyncSessionLocal
-from app.models.document import Document, DocumentChunk, DocumentJob
+from app.models.document import DocumentChunk, DocumentJob
 from app.models.knowledge import RagConfig
 from app.modules.job.errors import ParseError, PipelineError
 

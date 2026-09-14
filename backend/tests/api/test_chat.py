@@ -86,7 +86,7 @@ async def test_rag_chat_stream_with_citation() -> None:
             "# 员工手册\n\n"
             "年假制度：正式员工入职满一年可享有带薪年假 5 天。\n"
             "请假需提前三天在系统中提交申请。\n"
-        ).encode("utf-8")
+        ).encode()
         upload = await client.post(
             f"/api/v1/knowledge-bases/{kb_id}/documents",
             headers=headers,

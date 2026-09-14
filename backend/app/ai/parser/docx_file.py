@@ -9,7 +9,7 @@ import zipfile
 from docx import Document
 from docx.opc.exceptions import PackageNotFoundError
 
-from app.ai.parser.base import ParseResult, ParsedSegment
+from app.ai.parser.base import ParsedSegment, ParseResult
 from app.ai.parser.errors import DocumentParseError
 
 _HEADING_RE = re.compile(r"^Heading\s+(\d+)$", re.IGNORECASE)
