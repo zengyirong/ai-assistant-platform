@@ -172,6 +172,14 @@ class QdrantVectorStore(VectorStore):
             must.append(
                 qm.FieldCondition(key="kb_id", match=qm.MatchAny(any=list(kb_ids)))
             )
+        document_ids = filters.get("document_ids") or []
+        if document_ids:
+            must.append(
+                qm.FieldCondition(
+                    key="document_id",
+                    match=qm.MatchAny(any=list(document_ids)),
+                )
+            )
         try:
             response = await client.query_points(
                 collection_name=self.collection,

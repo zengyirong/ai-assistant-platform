@@ -13,6 +13,7 @@ from sqlalchemy.orm import selectinload
 from app.core.auth.deps import CurrentUser
 from app.core.errors import AppError
 from app.models.conversation import Conversation, ConversationMessage, MessageCitation
+from app.models.document import Document
 from app.modules.knowledge import service as kb_service
 
 
@@ -45,7 +46,12 @@ def citation_to_dict(c: MessageCitation, *, document_name: str | None = None) ->
     }
 
 
-def message_to_dict(msg: ConversationMessage) -> dict[str, Any]:
+def message_to_dict(
+    msg: ConversationMessage,
+    *,
+    document_names: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    names = document_names or {}
     return {
         "id": msg.id,
         "conversation_id": msg.conversation_id,
@@ -53,7 +59,10 @@ def message_to_dict(msg: ConversationMessage) -> dict[str, Any]:
         "content": msg.content,
         "status": msg.status,
         "request_id": msg.request_id,
-        "citations": [citation_to_dict(c) for c in (msg.citations or [])],
+        "citations": [
+            citation_to_dict(c, document_name=names.get(c.document_id))
+            for c in (msg.citations or [])
+        ],
         "created_at": _iso(msg.created_at),
     }
 
@@ -159,7 +168,22 @@ async def list_messages(
         .limit(page_size)
         .options(selectinload(ConversationMessage.citations))
     )
-    items = [message_to_dict(m) for m in result.scalars().all()]
+    messages = list(result.scalars().all())
+    doc_ids = {
+        c.document_id
+        for m in messages
+        for c in (m.citations or [])
+        if c.document_id
+    }
+    document_names: dict[str, str] = {}
+    if doc_ids:
+        name_rows = await db.execute(
+            select(Document.id, Document.file_name).where(Document.id.in_(doc_ids))
+        )
+        document_names = {row[0]: row[1] for row in name_rows.all() if row[1]}
+    items = [
+        message_to_dict(m, document_names=document_names) for m in messages
+    ]
     return {
         "items": items,
         "total": int(total or 0),

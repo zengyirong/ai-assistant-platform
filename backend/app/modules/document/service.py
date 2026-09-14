@@ -17,6 +17,7 @@ from app.ai.vectorstore import get_vector_store
 from app.core.auth.deps import CurrentUser
 from app.core.config import settings
 from app.core.errors import AppError
+from app.models.conversation import MessageCitation
 from app.models.document import Document, DocumentChunk, DocumentJob
 from app.modules.job.pipeline import ALLOWED_TYPES, sha256_hex
 from app.modules.knowledge import service as kb_service
@@ -220,6 +221,12 @@ async def delete_document(
         # Soft-delete still proceeds; vectors can be cleaned by retry/ops later
         pass
 
+    # Citations keep FK to chunk/document without CASCADE — clear first.
+    await db.execute(
+        MessageCitation.__table__.delete().where(
+            MessageCitation.document_id == doc.id
+        )
+    )
     await db.execute(
         DocumentChunk.__table__.delete().where(DocumentChunk.document_id == doc.id)
     )

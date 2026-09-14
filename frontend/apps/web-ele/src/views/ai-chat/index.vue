@@ -537,7 +537,7 @@ onUnmounted(() => {
           >
             <div class="mb-1 font-medium">
               [{{ idx + 1 }}]
-              {{ c.document_name || c.document_id.slice(0, 8) }}
+              {{ c.document_name || `文档 ${c.document_id.slice(0, 8)}` }}
             </div>
             <div class="text-muted-foreground mb-2">
               <span v-if="c.page != null">第 {{ c.page }} 页</span>
@@ -564,7 +564,7 @@ onUnmounted(() => {
           class="border-border rounded border p-3 text-xs"
         >
           <div class="mb-1 font-medium">
-            [{{ idx + 1 }}] {{ c.document_name || c.document_id.slice(0, 8) }}
+            [{{ idx + 1 }}] {{ c.document_name || `文档 ${c.document_id.slice(0, 8)}` }}
           </div>
           <div class="text-muted-foreground mb-2">
             <span v-if="c.page != null">第 {{ c.page }} 页</span>

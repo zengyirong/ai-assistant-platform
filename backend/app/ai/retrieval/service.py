@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.embedding import get_embedding_client
+from app.ai.retrieval.filename import mentioned_document_ids
 from app.ai.vectorstore import get_vector_store
 from app.core.config import settings
 from app.models.document import Document, DocumentChunk
@@ -46,14 +47,38 @@ async def retrieve_chunks(
         else settings.RAG_SCORE_THRESHOLD
     )
 
+    # Prefer documents whose file names are explicitly mentioned in the question.
+    doc_rows = await db.execute(
+        select(Document.id, Document.file_name).where(
+            Document.org_id == org_id,
+            Document.kb_id.in_(kb_ids),
+            Document.status != "DELETED",
+        )
+    )
+    kb_docs = [(row[0], row[1] or "") for row in doc_rows.all()]
+    mentioned_ids = mentioned_document_ids(question, kb_docs)
+
     embedding = get_embedding_client()
     store = get_vector_store()
     query_vector = await embedding.embed_query(question)
+    filters: dict[str, Any] = {"org_id": org_id, "kb_ids": kb_ids}
+    if mentioned_ids:
+        filters["document_ids"] = mentioned_ids
+
     hits = await store.search(
         query_vector,
-        filters={"org_id": org_id, "kb_ids": kb_ids},
+        filters=filters,
         top_k=limit,
     )
+
+    # If filename filter yields nothing, fall back to normal KB search.
+    if mentioned_ids and not hits:
+        hits = await store.search(
+            query_vector,
+            filters={"org_id": org_id, "kb_ids": kb_ids},
+            top_k=limit,
+        )
+
     if not hits:
         return []
 
@@ -69,10 +94,23 @@ async def retrieve_chunks(
         .where(DocumentChunk.id.in_(chunk_ids))
     )
     rows = {chunk.id: (chunk, file_name) for chunk, file_name in result.all()}
+    # Fallback map by document_id if chunk id lookup misses due to id format drift
+    name_by_doc = {doc_id: name for doc_id, name in kb_docs if name}
 
     retrieved: list[RetrievedChunk] = []
     for hit in hits:
         pair = rows.get(hit["chunk_id"])
+        if not pair:
+            # try normalized id match
+            hit_cid = str(hit.get("chunk_id") or "")
+            pair = next(
+                (
+                    rows[cid]
+                    for cid in rows
+                    if cid == hit_cid or cid.replace("-", "") == hit_cid.replace("-", "")
+                ),
+                None,
+            )
         if not pair:
             continue
         chunk, file_name = pair
@@ -80,7 +118,7 @@ async def retrieve_chunks(
             RetrievedChunk(
                 chunk_id=chunk.id,
                 document_id=chunk.document_id,
-                document_name=file_name,
+                document_name=file_name or name_by_doc.get(chunk.document_id),
                 kb_id=chunk.kb_id,
                 org_id=chunk.org_id,
                 content=chunk.content,
