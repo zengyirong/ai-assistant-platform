@@ -265,6 +265,7 @@ GET http://127.0.0.1:8000/ready  → mysql/qdrant ok
 | 2026-09-14 | 将联调截图归档至 `plan/assets/` 并在本文挂载 |
 | 2026-09-14 | B9 Citation 回填文件名；B10 问题含文件名时优先检索该文档 |
 | 2026-09-14 | B11 删除前清理 citation；B12 RetrievedChunk；B6 随 M2 关闭 |
+| 2026-09-14 | 续档见 [milestone-M4-M5-bugs-and-fixes.md](./milestone-M4-M5-bugs-and-fixes.md)（B13 / B14） |
 
 ---
 

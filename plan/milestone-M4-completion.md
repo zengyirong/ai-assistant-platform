@@ -55,8 +55,18 @@
 ## 5. 已知限制
 
 1. Seed 默认仅 `admin` 时，成员搜索演示需再建同组织用户，或临时自测搜 `admin`  
-2. 错误 map 覆盖 Error Matrix 主码；后端 `message` 仍作 fallback  
+2. 错误文案：**有后端 `message` 优先展示**；无 message 时用 code 映射（见 [B14](./milestone-M4-M5-bugs-and-fixes.md#3-b14--登录错误提示与后端-message-不一致)）  
 3. Job 进度依赖列表轮询 + `latest_job`，非 WebSocket  
+
+---
+
+## 5.1 验收后补丁（仍属 M4 错误体系收尾）
+
+| ID | 内容 | 状态 |
+|---|---|---|
+| [B14](./milestone-M4-M5-bugs-and-fixes.md) | code 映射盖住登录失败文案 | 已修复（`84323ed`） |
+
+框架侧登录 401→logout 死循环见同文档 **B13**（非 M4 引入，M5 联调暴露）。
 
 ---
 
@@ -74,11 +84,18 @@ feat: M4 成员搜索、错误文案与文档 Job 进度
 docs: 固化 M4 验收完成说明并规划 M5
 ```
 
+Bugs 归档：
+
+```text
+docs: 归档 M4/M5 联调 Bugs B13/B14
+```
+
 ---
 
 ## 7. 下一步
 
-→ **[里程碑 M5 — 可追溯与运维增强](./milestone-M5-next-goals.md)**：审计日志起步；可选轻量运维/治理项。
+→ **[里程碑 M5 — 可追溯与运维增强](./milestone-M5-next-goals.md)**（进行中）  
+→ Bugs：[milestone-M4-M5-bugs-and-fixes.md](./milestone-M4-M5-bugs-and-fixes.md)
 
 ---
 
@@ -87,3 +104,4 @@ docs: 固化 M4 验收完成说明并规划 M5
 | 日期 | 内容 |
 |---|---|
 | 2026-09-14 | 验收通过；完成本说明 |
+| 2026-09-14 | 补丁说明：B14 错误文案优先级；交叉引用 B13/B14 归档 |

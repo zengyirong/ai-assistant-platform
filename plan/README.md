@@ -34,14 +34,15 @@ M1 总结 / Bugs → M2 → M3 工程化 → M4 体验与治理 → M5 可追溯
 
 | 文档 | 说明 |
 |---|---|
-| [milestone-M1-bugs-and-fixes.md](./milestone-M1-bugs-and-fixes.md) | 联调 Bugs、根因、修复与验收清单（含 M2 收尾项） |
+| [milestone-M1-bugs-and-fixes.md](./milestone-M1-bugs-and-fixes.md) | 联调 Bugs B1–B12（含 M2 收尾） |
+| [milestone-M4-M5-bugs-and-fixes.md](./milestone-M4-M5-bugs-and-fixes.md) | **M4/M5 联调 Bugs B13–B14**（登录死循环 / 错误文案） |
 | [milestone-M1-deep-summary.md](./milestone-M1-deep-summary.md) | 审查→真实 RAG 主路径可演示：深度总结 |
 | [milestone-M2-next-goals.md](./milestone-M2-next-goals.md) | M2 目标与 DoD（已达成） |
 | [milestone-M2-completion.md](./milestone-M2-completion.md) | **M2 完成说明（验收通过）** |
 | [milestone-M3-next-goals.md](./milestone-M3-next-goals.md) | M3 目标与 DoD（已达成） |
 | [milestone-M3-completion.md](./milestone-M3-completion.md) | **M3 完成说明（验收通过）** |
 | [milestone-M4-next-goals.md](./milestone-M4-next-goals.md) | M4 目标与 DoD（已达成） |
-| [milestone-M4-completion.md](./milestone-M4-completion.md) | **M4 完成说明（验收通过）** |
+| [milestone-M4-completion.md](./milestone-M4-completion.md) | **M4 完成说明（验收通过；含 B14 补丁说明）** |
 | [milestone-M5-next-goals.md](./milestone-M5-next-goals.md) | **M5 可追溯与运维增强（进行中）** |
 
 ## 与 `docs/` 的分工

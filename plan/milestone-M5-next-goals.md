@@ -54,7 +54,7 @@
 
 1. 登录 admin → 侧栏「审计日志」可见登录记录  
 2. 上传 / 删文档 / 改成员后再刷新，可见对应 `action`  
-3. 故意输错密码 → `auth.login` + `FAILED`
+3. 故意输错密码 → `auth.login` + `FAILED`；Toast 为「用户名或密码错误」；**无** logout 刷屏（见 [B13/B14](./milestone-M4-M5-bugs-and-fixes.md)）
 
 ---
 
@@ -64,3 +64,4 @@
 |---|---|
 | 2026-09-14 | 初版：M4 验收后下一里程碑（承接审计 Should） |
 | 2026-09-14 | 开工：AuditLog 模型、best-effort 写入、ADMIN 列表 API/UI |
+| 2026-09-14 | 联调暴露 B13/B14 已修；Bugs 归档见 `milestone-M4-M5-bugs-and-fixes.md` |
