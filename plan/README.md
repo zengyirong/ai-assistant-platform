@@ -17,7 +17,7 @@ phase0.5-uiux-review.md
         ↓
 ../docs/*（DDL / API / SSE）
         ↓
-M1 总结 / Bugs → M2 → M3 → M4 → M5 → **M6 一期收口（已完成）** → [交接说明](./phase1-handoff.md)
+M1 总结 / Bugs → … → **M6 一期收口（已完成）** → [交接说明](./phase1-handoff.md) → **M7 系统管理 / RBAC 闭环**
 ```
 
 ## 索引
@@ -47,6 +47,7 @@ M1 总结 / Bugs → M2 → M3 → M4 → M5 → **M6 一期收口（已完成�
 | [milestone-M5-completion.md](./milestone-M5-completion.md) | **M5 完成说明（验收通过）** |
 | [milestone-M6-next-goals.md](./milestone-M6-next-goals.md) | M6 目标与 DoD（已达成） |
 | [milestone-M6-completion.md](./milestone-M6-completion.md) | **M6 完成说明（验收通过）— 一期收口** |
+| [milestone-M7-next-goals.md](./milestone-M7-next-goals.md) | **下一里程碑：系统管理 / 完整 RBAC（含菜单，无部门）** |
 | [phase1-handoff.md](./phase1-handoff.md) | **一期交接 / 演示说明** |
 
 ## 与 `docs/` 的分工

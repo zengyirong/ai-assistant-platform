@@ -72,7 +72,7 @@ docs: 固化 M6 一期收口完成说明；seed 增加 demo 演示账号
 
 一期 **P0 + P1 主线已收口**。可选方向（另立里程碑，勿默认膨胀）：
 
-1. **系统管理**（用户/角色/空间 UI）— 偿还 Phase 0.5 IA 债  
+1. **系统管理**（用户/角色/**菜单**/空间 UI）— 完整 RBAC 闭环；见 [M7](./milestone-M7-next-goals.md)  
 2. Citation / 会话体验小修  
 3. **P2**：Redis / Celery / MinIO / OCR / Rerank / Hybrid Search  
 
