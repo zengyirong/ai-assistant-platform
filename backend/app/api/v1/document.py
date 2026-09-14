@@ -11,6 +11,7 @@ from app.api.deps import ok
 from app.core.auth.deps import CurrentUser
 from app.core.rbac import require_permissions
 from app.db.session import get_db
+from app.modules.audit import service as audit_service
 from app.modules.document import service as doc_service
 from app.modules.job.pipeline import run_parse_index_job
 
@@ -52,6 +53,21 @@ async def upload_document(
         data=raw,
     )
     background_tasks.add_task(run_parse_index_job, job_id)
+    await audit_service.write_audit(
+        action="document.upload",
+        result="SUCCESS",
+        org_id=user.org_id,
+        user_id=user.id,
+        resource_type="document",
+        resource_id=data.get("id"),
+        detail={
+            "kb_id": kb_id,
+            "file_name": filename,
+            "file_size": data.get("file_size"),
+            "job_id": job_id,
+        },
+        request=request,
+    )
     return ok(request, data)
 
 
@@ -74,6 +90,15 @@ async def delete_document(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     await doc_service.delete_document(db, user, document_id)
+    await audit_service.write_audit(
+        action="document.delete",
+        result="SUCCESS",
+        org_id=user.org_id,
+        user_id=user.id,
+        resource_type="document",
+        resource_id=document_id,
+        request=request,
+    )
     return ok(request, {})
 
 
@@ -87,8 +112,17 @@ async def retry_document(
 ) -> dict[str, Any]:
     job = await doc_service.retry_document(db, user, document_id)
     background_tasks.add_task(run_parse_index_job, job["id"])
+    await audit_service.write_audit(
+        action="document.retry",
+        result="SUCCESS",
+        org_id=user.org_id,
+        user_id=user.id,
+        resource_type="document",
+        resource_id=document_id,
+        detail={"job_id": job.get("id")},
+        request=request,
+    )
     return ok(request, job)
-
 
 @documents_router.get("/{document_id}/jobs")
 async def list_jobs(

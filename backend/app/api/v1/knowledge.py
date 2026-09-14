@@ -12,6 +12,7 @@ from app.api.deps import ok
 from app.core.auth.deps import CurrentUser
 from app.core.rbac import require_permissions
 from app.db.session import get_db
+from app.modules.audit import service as audit_service
 from app.modules.knowledge import service as kb_service
 
 router = APIRouter()
@@ -148,6 +149,16 @@ async def add_member(
     await kb_service.add_member(
         db, user, kb_id, user_id=body.user_id, role=body.role
     )
+    await audit_service.write_audit(
+        action="kb.member.upsert",
+        result="SUCCESS",
+        org_id=user.org_id,
+        user_id=user.id,
+        resource_type="knowledge_base",
+        resource_id=kb_id,
+        detail={"member_user_id": body.user_id, "role": body.role},
+        request=request,
+    )
     return ok(request, {})
 
 
@@ -160,6 +171,16 @@ async def remove_member(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     await kb_service.remove_member(db, user, kb_id, user_id)
+    await audit_service.write_audit(
+        action="kb.member.remove",
+        result="SUCCESS",
+        org_id=user.org_id,
+        user_id=user.id,
+        resource_type="knowledge_base",
+        resource_id=kb_id,
+        detail={"member_user_id": user_id},
+        request=request,
+    )
     return ok(request, {})
 
 

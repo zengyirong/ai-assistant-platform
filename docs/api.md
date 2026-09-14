@@ -65,6 +65,7 @@ SSE 路径上的业务错误通过 `event: error` 下发，`data.code` 使用上
 | POST | `/api/v1/auth/logout` | 是 | — | — |
 | GET | `/api/v1/auth/me` | 是 | — | — |
 | GET | `/api/v1/users` | 是 | — | 本 org ACTIVE 用户（`q` 搜 username/nickname） |
+| GET | `/api/v1/audit-logs` | 是 | — | **ADMIN**；本 org；可选 `action` / `user_id` |
 | GET | `/api/v1/spaces` | 是 | — | 本 org 可见 space |
 | POST | `/api/v1/spaces` | 是 | — | 本 org |
 | GET | `/api/v1/spaces/{id}` | 是 | — | 成员或 ADMIN |
@@ -127,6 +128,15 @@ ADMIN：当前 org 全部
 - 仅返回当前登录用户所在 org 的 `ACTIVE` 用户
 - `q` 可选，匹配 `username` / `nickname`（模糊）
 - `data.items[]`: `{ id, username, nickname, status }`
+
+### 4.1.2 Audit Logs（ADMIN）
+
+**GET `/api/v1/audit-logs?page=&page_size=&action=&user_id=`**
+
+- 仅 `ADMIN`；限定当前 org
+- 写入动作（best-effort，失败不阻断业务）：`auth.login` / `auth.logout` / `document.upload` / `document.delete` / `document.retry` / `kb.member.upsert` / `kb.member.remove`
+- `result`: `SUCCESS` / `FAILED` / `DENIED`
+- `data.items[]`: `{ id, org_id, user_id, action, resource_type, resource_id, request_id, result, ip, user_agent, detail, created_at }`
 
 ### 4.2 Space
 
