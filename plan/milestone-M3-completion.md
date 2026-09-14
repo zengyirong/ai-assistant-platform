@@ -60,7 +60,7 @@
 1. GitHub Actions 需推远程后才实际跑绿；本地验收已覆盖同等检查项  
 2. Golden Dataset 仅为 parse/chunk 离线烟雾，尚无检索质量评分  
 3. Docker MySQL init 仍可挂 DDL 作 fallback；新环境优先 Alembic  
-4. 体验与治理（成员、审计、错误文案、上传进度）→ **M4**
+4. ~~体验与治理（成员、审计、错误文案、上传进度）~~ → **M4 已完成**（审计结转 M5）
 
 ---
 
@@ -82,7 +82,7 @@ docs: 固化 M3 验收完成说明并规划 M4
 
 ## 7. 下一步
 
-→ **[里程碑 M4 — 体验与治理](./milestone-M4-next-goals.md)**：用户列表/加成员体验、审计日志、错误文案体系、上传进度。
+→ **[里程碑 M4 — 体验与治理](./milestone-M4-completion.md)**（已验收）→ 下一刀见 [M5](./milestone-M5-next-goals.md)。
 
 ---
 
