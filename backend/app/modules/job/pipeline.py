@@ -10,18 +10,31 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import selectinload
 
 from app.ai.embedding import get_embedding_client
+from app.ai.parser import parse_document_bytes
+from app.ai.parser.errors import DocumentParseError
 from app.ai.storage import get_file_storage
 from app.ai.vectorstore import get_vector_store
 from app.core.errors import AppError
 from app.db.session import AsyncSessionLocal
 from app.models.document import Document, DocumentChunk, DocumentJob
 from app.models.knowledge import RagConfig
+from app.modules.job.errors import ParseError, PipelineError
 
 logger = logging.getLogger(__name__)
 
 JOB_STEPS = ("PARSING", "CHUNKING", "EMBEDDING", "INDEXING")
 TEXT_TYPES = {"txt", "md", "markdown"}
 ALLOWED_TYPES = TEXT_TYPES | {"pdf", "docx"}
+
+__all__ = [
+    "ALLOWED_TYPES",
+    "JOB_STEPS",
+    "ParseError",
+    "PipelineError",
+    "run_parse_index_job",
+    "sha256_hex",
+    "simple_chunk_text",
+]
 
 
 def _utcnow() -> datetime:
@@ -58,6 +71,25 @@ def simple_chunk_text(
     return chunks
 
 
+def chunk_parse_result(
+    parse_result,
+    *,
+    chunk_size: int = 800,
+    chunk_overlap: int = 120,
+) -> list[tuple[str, int | None, str | None]]:
+    """Return (content, page, section) rows preserving segment metadata."""
+    rows: list[tuple[str, int | None, str | None]] = []
+    for segment in parse_result.segments:
+        pieces = simple_chunk_text(
+            segment.text,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
+        for piece in pieces:
+            rows.append((piece, segment.page, segment.section))
+    return rows
+
+
 async def run_parse_index_job(job_id: str) -> None:
     """Background worker: PENDING → … → SUCCESS/FAILED."""
     storage = get_file_storage()
@@ -90,19 +122,12 @@ async def run_parse_index_job(job_id: str) -> None:
             await db.commit()
 
             raw = await storage.read_bytes(doc.storage_path)
-            if doc.file_type not in TEXT_TYPES:
-                raise PipelineError(
-                    "DOCUMENT_PARSE_FAILED",
-                    f"一期暂不支持解析 .{doc.file_type}，请上传 txt/md",
-                )
-
             try:
-                text = raw.decode("utf-8")
-            except UnicodeDecodeError as exc:
-                raise PipelineError(
-                    "DOCUMENT_PARSE_FAILED",
-                    "文件不是有效 UTF-8 文本",
-                ) from exc
+                parsed = parse_document_bytes(raw, file_type=doc.file_type)
+            except DocumentParseError as exc:
+                raise PipelineError(exc.code, exc.message) from exc
+            if not parsed.has_text:
+                raise PipelineError("DOCUMENT_PARSE_FAILED", "文档内容为空，无法分块")
 
             job.status = "CHUNKING"
             job.progress = 40
@@ -111,8 +136,10 @@ async def run_parse_index_job(job_id: str) -> None:
             rag = await db.scalar(select(RagConfig).where(RagConfig.kb_id == doc.kb_id))
             chunk_size = rag.chunk_size if rag else 800
             chunk_overlap = rag.chunk_overlap if rag else 120
-            pieces = simple_chunk_text(
-                text, chunk_size=chunk_size, chunk_overlap=chunk_overlap
+            pieces = chunk_parse_result(
+                parsed,
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
             )
             if not pieces:
                 raise PipelineError("DOCUMENT_PARSE_FAILED", "文档内容为空，无法分块")
@@ -127,7 +154,7 @@ async def run_parse_index_job(job_id: str) -> None:
                 delete(DocumentChunk).where(DocumentChunk.document_id == doc.id)
             )
             chunk_rows: list[DocumentChunk] = []
-            for index, content in enumerate(pieces):
+            for index, (content, page, section) in enumerate(pieces):
                 row = DocumentChunk(
                     org_id=doc.org_id,
                     kb_id=doc.kb_id,
@@ -135,6 +162,8 @@ async def run_parse_index_job(job_id: str) -> None:
                     chunk_index=index,
                     content=content,
                     content_hash=sha256_hex(content.encode("utf-8")),
+                    page=page,
+                    section=section,
                     token_count=len(content),
                 )
                 db.add(row)
@@ -188,7 +217,9 @@ async def run_parse_index_job(job_id: str) -> None:
             job.progress = 100
             job.finished_at = _utcnow()
             doc.status = "READY"
-            doc.page_count = 1
+            doc.page_count = parsed.page_count or len(
+                {p for _, p, _ in pieces if p is not None}
+            ) or 1
             await db.commit()
         except PipelineError as exc:
             await _fail_job(db, job_id, exc.code, exc.message)
@@ -200,17 +231,6 @@ async def run_parse_index_job(job_id: str) -> None:
                 "DOCUMENT_PARSE_FAILED",
                 "文档处理失败",
             )
-
-
-class PipelineError(Exception):
-    def __init__(self, code: str, message: str) -> None:
-        self.code = code
-        self.message = message
-        super().__init__(message)
-
-
-# Back-compat alias used by older imports/tests
-ParseError = PipelineError
 
 
 async def _fail_job(

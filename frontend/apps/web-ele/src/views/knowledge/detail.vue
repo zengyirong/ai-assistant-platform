@@ -392,7 +392,7 @@ onUnmounted(() => stopPolling());
         <ElTabPane label="文档" name="documents">
           <div class="mb-3 flex items-center justify-between">
             <div class="text-muted-foreground text-sm">
-              支持 PDF / DOCX / TXT / MD，单文件最大 20MB
+              支持 PDF / DOCX / TXT / MD，单文件最大 20MB（扫描版 PDF 需 OCR，暂不支持）
             </div>
             <ElButton type="primary" @click="uploadVisible = true">上传文档</ElButton>
           </div>
@@ -444,7 +444,7 @@ onUnmounted(() => stopPolling());
             v-if="!docsLoading && documents.length === 0"
             class="text-muted-foreground py-12 text-center text-sm"
           >
-            当前知识库还没有文档。支持 PDF / DOCX / TXT / MD。
+            当前知识库还没有文档。支持 PDF / DOCX / TXT / MD（扫描版 PDF 暂不支持）。
           </div>
         </ElTabPane>
 
@@ -562,7 +562,7 @@ onUnmounted(() => stopPolling());
         <div class="py-6 text-center">
           <div>拖拽文件到这里，或点击选择</div>
           <div class="text-muted-foreground mt-2 text-xs">
-            PDF / DOCX / TXT / MD，单文件 ≤ 20MB
+            PDF / DOCX / TXT / MD，单文件 ≤ 20MB；扫描版 PDF 暂不支持
           </div>
         </div>
       </ElUpload>

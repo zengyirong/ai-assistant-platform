@@ -17,6 +17,8 @@ dependencies = [
   "python-multipart>=0.0.17",
   "httpx>=0.28.0",
   "qdrant-client>=1.12.0",
+  "pymupdf>=1.24.0",
+  "python-docx>=1.1.0",
 ]
 
 [project.optional-dependencies]

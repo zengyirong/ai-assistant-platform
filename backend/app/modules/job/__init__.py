@@ -1,3 +1,5 @@
-from app.modules.job import pipeline
+"""Job module exports."""
 
-__all__ = ["pipeline"]
+from app.modules.job.errors import ParseError, PipelineError
+
+__all__ = ["ParseError", "PipelineError"]
