@@ -28,21 +28,36 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     baseURL,
   });
 
+  let reAuthenticating = false;
+
   /**
    * 重新认证逻辑
    */
   async function doReAuthenticate() {
-    console.warn('Access token or refresh token is invalid or expired. ');
-    const accessStore = useAccessStore();
-    const authStore = useAuthStore();
-    accessStore.setAccessToken(null);
-    if (
-      preferences.app.loginExpiredMode === 'modal' &&
-      accessStore.isAccessChecked
-    ) {
-      accessStore.setLoginExpired(true);
-    } else {
-      await authStore.logout();
+    if (reAuthenticating) {
+      return;
+    }
+    reAuthenticating = true;
+    try {
+      console.warn('Access token or refresh token is invalid or expired. ');
+      const accessStore = useAccessStore();
+      const authStore = useAuthStore();
+      const hadToken = Boolean(accessStore.accessToken);
+      accessStore.setAccessToken(null);
+      // 本来就没有 token（例如登录页输错密码）时，不要再调 logout API
+      if (!hadToken) {
+        return;
+      }
+      if (
+        preferences.app.loginExpiredMode === 'modal' &&
+        accessStore.isAccessChecked
+      ) {
+        accessStore.setLoginExpired(true);
+      } else {
+        await authStore.logout();
+      }
+    } finally {
+      reAuthenticating = false;
     }
   }
 
@@ -101,7 +116,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
         (responseData?.message as string | undefined) ||
         (responseData?.error as string | undefined) ||
         '';
-      ElMessage.error(resolveErrorMessage(code, backendMessage || msg));
+      ElMessage.error(resolveErrorMessage(code, backendMessage));
     }),
   );
 

@@ -64,6 +64,17 @@ export const authenticateResponseInterceptor = ({
       if (response?.status !== 401) {
         throw error;
       }
+
+      // 登录/登出本身的 401 不是「会话过期」，禁止再触发 logout，否则会死循环
+      const url = String(config?.url ?? '');
+      if (
+        url.includes('/auth/login') ||
+        url.includes('/auth/logout') ||
+        url.includes('/auth/refresh')
+      ) {
+        throw error;
+      }
+
       // 判断是否启用了 refreshToken 功能
       // 如果没有启用或者已经是重试请求了，直接跳转到重新登录
       if (!enableRefreshToken || config.__isRetryRequest) {

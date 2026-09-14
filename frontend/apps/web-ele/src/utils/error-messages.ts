@@ -38,11 +38,14 @@ export function resolveErrorMessage(
   code?: string | null,
   fallback?: string | null,
 ): string {
+  // Prefer backend `message`: same code can mean different UX
+  // (e.g. AUTH_UNAUTHORIZED = wrong password vs session expired).
+  const text = fallback?.trim();
+  if (text) {
+    return text;
+  }
   if (code && API_ERROR_MESSAGES[code]) {
     return API_ERROR_MESSAGES[code];
-  }
-  if (fallback && fallback.trim()) {
-    return fallback;
   }
   if (code) {
     return code;
