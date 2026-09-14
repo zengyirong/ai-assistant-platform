@@ -49,7 +49,12 @@ import {
   removeKbMemberApi,
   updateRagConfigApi,
 } from '#/api/knowledge';
+import { listOrgUsersApi } from '#/api/user';
 import { DOCUMENT_STATUS_MAP } from '#/types/document';
+import {
+  jobStageLabel,
+  resolveErrorMessage,
+} from '#/utils/error-messages';
 
 defineOptions({ name: 'KnowledgeDetail' });
 
@@ -79,9 +84,12 @@ const memberForm = reactive({
   role: 'VIEWER' as KbMemberRole,
 });
 const memberRules: FormRules = {
-  user_id: [{ required: true, message: '请输入用户 ID', trigger: 'blur' }],
+  user_id: [{ required: true, message: '请选择用户', trigger: 'change' }],
   role: [{ required: true, message: '请选择角色', trigger: 'change' }],
 };
+const userOptions = ref<{ id: string; label: string }[]>([]);
+const userSearchLoading = ref(false);
+const roleUpdatingId = ref<null | string>(null);
 
 const ragFormRef = ref<FormInstance>();
 const ragSaving = ref(false);
@@ -104,12 +112,6 @@ const ragRules: FormRules = {
 
 const title = computed(() => kb.value?.name || '知识库详情');
 
-const roleLabel: Record<KbMemberRole, string> = {
-  OWNER: '所有者',
-  EDITOR: '编辑者',
-  VIEWER: '查看者',
-};
-
 function formatSize(size: number) {
   if (size < 1024) return `${size} B`;
   if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
@@ -123,6 +125,42 @@ function statusMeta(status: string) {
       type: 'info' as const,
     }
   );
+}
+
+function memberDisplayName(row: KbMember) {
+  return row.nickname || row.username || row.user_id;
+}
+
+function jobProgressText(row: DocumentItem) {
+  const job = row.latest_job;
+  if (!job) return '';
+  if (row.status === 'READY') return '';
+  if (row.status === 'FAILED') {
+    return resolveErrorMessage(job.error_code, job.error_message);
+  }
+  const stage = jobStageLabel(job.status);
+  return `${stage || '处理中'} ${job.progress ?? 0}%`;
+}
+
+async function searchUsers(query: string) {
+  userSearchLoading.value = true;
+  try {
+    const data = await listOrgUsersApi({
+      q: query.trim() || undefined,
+      page: 1,
+      page_size: 20,
+    });
+    userOptions.value = (data.items ?? []).map((u) => ({
+      id: u.id,
+      label: u.nickname
+        ? `${u.nickname}（${u.username}）`
+        : u.username,
+    }));
+  } catch {
+    userOptions.value = [];
+  } finally {
+    userSearchLoading.value = false;
+  }
 }
 
 function applyRagToForm(config: RagConfig) {
@@ -247,12 +285,14 @@ async function onDeleteDoc(row: DocumentItem) {
 
 async function showFailReason(row: DocumentItem) {
   try {
-    const data = await listDocumentJobsApi(row.id);
-    const job = data.items?.[0];
+    const job =
+      row.latest_job ||
+      (await listDocumentJobsApi(row.id)).items?.[0] ||
+      null;
+    const title = resolveErrorMessage(job?.error_code, '解析失败');
+    const detail = job?.error_message || '暂无详情';
     await ElMessageBox.alert(
-      `错误类型：${job?.error_code || 'UNKNOWN'}\n\n原因：${
-        job?.error_message || '暂无详情'
-      }\n\n建议：请检查文件格式后重试，或联系管理员。`,
+      `${title}\n\n详情：${detail}\n\n建议：请检查文件格式后重试，或联系管理员。`,
       '解析失败',
       { confirmButtonText: '知道了' },
     );
@@ -265,6 +305,7 @@ function openAddMember() {
   memberForm.user_id = '';
   memberForm.role = 'VIEWER';
   memberDialogVisible.value = true;
+  void searchUsers('');
 }
 
 async function submitAddMember() {
@@ -286,10 +327,24 @@ async function submitAddMember() {
   }
 }
 
+async function onChangeMemberRole(row: KbMember, role: KbMemberRole) {
+  if (row.role === role) return;
+  roleUpdatingId.value = row.user_id;
+  try {
+    await addKbMemberApi(kbId.value, { user_id: row.user_id, role });
+    ElMessage.success('角色已更新');
+    await loadMembers();
+  } catch {
+    await loadMembers();
+  } finally {
+    roleUpdatingId.value = null;
+  }
+}
+
 async function onRemoveMember(row: KbMember) {
   try {
     await ElMessageBox.confirm(
-      `移除成员「${row.user_id}」？\n移除后对方将无法访问此知识库。`,
+      `移除成员「${memberDisplayName(row)}」？\n移除后对方将无法访问此知识库。`,
       '移除确认',
       { type: 'warning' },
     );
@@ -405,11 +460,19 @@ onUnmounted(() => stopPolling());
                 {{ formatSize(row.file_size) }}
               </template>
             </ElTableColumn>
-            <ElTableColumn label="状态" width="120">
+            <ElTableColumn label="状态" width="220">
               <template #default="{ row }">
-                <ElTag :type="statusMeta(row.status).type" size="small">
-                  {{ statusMeta(row.status).label }}
-                </ElTag>
+                <div class="flex flex-col gap-1">
+                  <ElTag :type="statusMeta(row.status).type" size="small">
+                    {{ statusMeta(row.status).label }}
+                  </ElTag>
+                  <span
+                    v-if="jobProgressText(row)"
+                    class="text-muted-foreground text-xs leading-snug"
+                  >
+                    {{ jobProgressText(row) }}
+                  </span>
+                </div>
               </template>
             </ElTableColumn>
             <ElTableColumn prop="updated_at" label="更新时间" min-width="180" />
@@ -451,16 +514,36 @@ onUnmounted(() => stopPolling());
         <ElTabPane label="成员与权限" name="members">
           <div class="mb-3 flex items-center justify-between gap-3">
             <div class="text-muted-foreground text-sm">
-              OWNER 可管理成员；EDITOR 可编辑；VIEWER 只读。一期暂无用户搜索，请填写用户
-              UUID。
+              搜索组织内用户添加成员。OWNER 可管理；EDITOR 可编辑；VIEWER 只读。
             </div>
             <ElButton type="primary" @click="openAddMember">添加成员</ElButton>
           </div>
           <ElTable :data="members" stripe>
-            <ElTableColumn prop="user_id" label="用户 ID" min-width="260" />
-            <ElTableColumn label="权限" width="120">
+            <ElTableColumn label="用户" min-width="200">
               <template #default="{ row }">
-                {{ roleLabel[row.role as KbMemberRole] || row.role }}
+                <div class="flex flex-col">
+                  <span>{{ memberDisplayName(row) }}</span>
+                  <span
+                    v-if="row.username && row.nickname"
+                    class="text-muted-foreground text-xs"
+                  >
+                    {{ row.username }}
+                  </span>
+                </div>
+              </template>
+            </ElTableColumn>
+            <ElTableColumn label="权限" width="160">
+              <template #default="{ row }">
+                <ElSelect
+                  :model-value="row.role"
+                  size="small"
+                  :loading="roleUpdatingId === row.user_id"
+                  @change="(val) => onChangeMemberRole(row, val)"
+                >
+                  <ElOption label="所有者" value="OWNER" />
+                  <ElOption label="编辑者" value="EDITOR" />
+                  <ElOption label="查看者" value="VIEWER" />
+                </ElSelect>
               </template>
             </ElTableColumn>
             <ElTableColumn prop="created_at" label="加入时间" min-width="180" />
@@ -583,11 +666,25 @@ onUnmounted(() => stopPolling());
         :rules="memberRules"
         label-position="top"
       >
-        <ElFormItem label="用户 ID（UUID）" prop="user_id">
-          <ElInput
+        <ElFormItem label="选择用户" prop="user_id">
+          <ElSelect
             v-model="memberForm.user_id"
-            placeholder="例如从 /auth/me 获取的 id"
-          />
+            class="w-full"
+            filterable
+            remote
+            clearable
+            reserve-keyword
+            placeholder="输入用户名或昵称搜索"
+            :remote-method="searchUsers"
+            :loading="userSearchLoading"
+          >
+            <ElOption
+              v-for="opt in userOptions"
+              :key="opt.id"
+              :label="opt.label"
+              :value="opt.id"
+            />
+          </ElSelect>
         </ElFormItem>
         <ElFormItem label="角色" prop="role">
           <ElSelect v-model="memberForm.role" class="w-full">

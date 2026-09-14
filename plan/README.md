@@ -40,7 +40,7 @@ M1 总结 / Bugs → M2 → M3 工程化 → M4 体验与治理
 | [milestone-M2-completion.md](./milestone-M2-completion.md) | **M2 完成说明（验收通过）** |
 | [milestone-M3-next-goals.md](./milestone-M3-next-goals.md) | M3 目标与 DoD（已达成） |
 | [milestone-M3-completion.md](./milestone-M3-completion.md) | **M3 完成说明（验收通过）** |
-| [milestone-M4-next-goals.md](./milestone-M4-next-goals.md) | 下一里程碑：体验与治理 |
+| [milestone-M4-next-goals.md](./milestone-M4-next-goals.md) | **M4 体验与治理（进行中）** |
 
 ## 与 `docs/` 的分工
 

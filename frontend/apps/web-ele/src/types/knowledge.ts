@@ -41,6 +41,8 @@ export interface KnowledgeBaseUpdatePayload {
 
 export interface KbMember {
   user_id: string;
+  username?: string | null;
+  nickname?: string | null;
   role: KbMemberRole;
   created_at: string | null;
 }

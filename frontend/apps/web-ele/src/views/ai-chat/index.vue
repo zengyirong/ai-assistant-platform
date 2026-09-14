@@ -31,6 +31,7 @@ import {
   listMessagesApi,
 } from '#/api/conversation';
 import { listKnowledgeBasesApi } from '#/api/knowledge';
+import { resolveErrorMessage } from '#/utils/error-messages';
 
 defineOptions({ name: 'AiChatWorkspace' });
 
@@ -296,7 +297,10 @@ async function sendQuestion() {
             case 'error': {
               const data = envelope.data as SseErrorData;
               streamState.value = 'ERROR';
-              streamError.value = data?.message || data?.code || '生成失败';
+              streamError.value = resolveErrorMessage(
+                data?.code,
+                data?.message || '生成失败',
+              );
               msg.status = 'FAILED';
               if (!msg.content) {
                 msg.content = streamError.value;

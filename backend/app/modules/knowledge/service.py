@@ -15,6 +15,7 @@ from app.core.errors import AppError
 from app.core.rbac import is_admin
 from app.models.knowledge import KnowledgeBase, KnowledgeBaseMember, RagConfig
 from app.models.organization import Space, SpaceMember
+from app.models.user import SysUser
 
 AccessLevel = Literal["VIEW", "EDIT", "MANAGE"]
 
@@ -39,9 +40,15 @@ def kb_to_dict(kb: KnowledgeBase, *, document_count: int | None = 0) -> dict[str
     }
 
 
-def member_to_dict(member: KnowledgeBaseMember) -> dict[str, Any]:
+def member_to_dict(
+    member: KnowledgeBaseMember,
+    *,
+    user: SysUser | None = None,
+) -> dict[str, Any]:
     return {
         "user_id": member.user_id,
+        "username": user.username if user else None,
+        "nickname": user.nickname if user else None,
         "role": member.role,
         "created_at": _iso(member.created_at),
     }
@@ -380,7 +387,18 @@ async def list_members(
         raise AppError("KB_NOT_FOUND", "知识库不存在或不可见", http_status=404)
     space_ids = await _space_member_ids(db, user_id=user.id)
     require_level(user_access_level(user, kb, space_ids=space_ids), "VIEW")
-    return {"items": [member_to_dict(m) for m in kb.members]}
+
+    user_ids = [m.user_id for m in kb.members]
+    users_by_id: dict[str, SysUser] = {}
+    if user_ids:
+        result = await db.execute(select(SysUser).where(SysUser.id.in_(user_ids)))
+        users_by_id = {u.id: u for u in result.scalars().all()}
+
+    return {
+        "items": [
+            member_to_dict(m, user=users_by_id.get(m.user_id)) for m in kb.members
+        ]
+    }
 
 
 async def add_member(
@@ -398,6 +416,18 @@ async def add_member(
         raise AppError("KB_NOT_FOUND", "知识库不存在或不可见", http_status=404)
     space_ids = await _space_member_ids(db, user_id=user.id)
     require_level(user_access_level(user, kb, space_ids=space_ids), "MANAGE")
+
+    target = await db.get(SysUser, user_id)
+    if (
+        target is None
+        or target.org_id != user.org_id
+        or target.status != "ACTIVE"
+    ):
+        raise AppError(
+            "VALIDATION_ERROR",
+            "用户不存在或不属于本组织",
+            http_status=400,
+        )
 
     existing = _member_role(kb, user_id)
     if existing is not None:

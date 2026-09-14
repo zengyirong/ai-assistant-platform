@@ -32,7 +32,7 @@ def _iso(dt: datetime | None) -> str | None:
 
 
 def document_to_dict(doc: Document, *, job_id: str | None = None) -> dict[str, Any]:
-    data = {
+    data: dict[str, Any] = {
         "id": doc.id,
         "org_id": doc.org_id,
         "kb_id": doc.kb_id,
@@ -45,9 +45,25 @@ def document_to_dict(doc: Document, *, job_id: str | None = None) -> dict[str, A
         "created_by": doc.created_by,
         "created_at": _iso(doc.created_at),
         "updated_at": _iso(doc.updated_at),
+        "latest_job": None,
     }
     if job_id is not None:
         data["job_id"] = job_id
+    jobs = getattr(doc, "jobs", None) or []
+    if jobs:
+        latest = max(
+            jobs,
+            key=lambda j: j.created_at or datetime.min,
+        )
+        data["latest_job"] = {
+            "id": latest.id,
+            "status": latest.status,
+            "progress": int(latest.progress or 0),
+            "error_code": latest.error_code,
+            "error_message": latest.error_message,
+        }
+        if job_id is None:
+            data["job_id"] = latest.id
     return data
 
 

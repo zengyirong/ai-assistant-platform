@@ -64,6 +64,7 @@ SSE 路径上的业务错误通过 `event: error` 下发，`data.code` 使用上
 | POST | `/api/v1/auth/login` | 否 | — | — |
 | POST | `/api/v1/auth/logout` | 是 | — | — |
 | GET | `/api/v1/auth/me` | 是 | — | — |
+| GET | `/api/v1/users` | 是 | — | 本 org ACTIVE 用户（`q` 搜 username/nickname） |
 | GET | `/api/v1/spaces` | 是 | — | 本 org 可见 space |
 | POST | `/api/v1/spaces` | 是 | — | 本 org |
 | GET | `/api/v1/spaces/{id}` | 是 | — | 成员或 ADMIN |
@@ -118,6 +119,14 @@ ADMIN：当前 org 全部
 **GET `/api/v1/auth/me`** → 当前用户 + roles + permissions（codes 列表）。
 
 **POST `/api/v1/auth/logout`** → 一期可无服务端黑名单，返回 OK（前端丢弃 token）；预留审计。
+
+### 4.1.1 Users（组织内用户，供成员选择器）
+
+**GET `/api/v1/users?q=&page=&page_size=`**
+
+- 仅返回当前登录用户所在 org 的 `ACTIVE` 用户
+- `q` 可选，匹配 `username` / `nickname`（模糊）
+- `data.items[]`: `{ id, username, nickname, status }`
 
 ### 4.2 Space
 

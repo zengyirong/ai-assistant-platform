@@ -7,6 +7,14 @@ export type DocumentStatus =
   | 'FAILED'
   | 'DELETED';
 
+export interface DocumentJobBrief {
+  id: string;
+  status: string;
+  progress: number;
+  error_code: string | null;
+  error_message: string | null;
+}
+
 export interface DocumentItem {
   id: string;
   org_id: string;
@@ -21,6 +29,7 @@ export interface DocumentItem {
   created_at: string | null;
   updated_at: string | null;
   job_id?: string;
+  latest_job?: DocumentJobBrief | null;
 }
 
 export interface DocumentPage {
