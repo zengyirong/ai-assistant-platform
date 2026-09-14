@@ -1,5 +1,6 @@
 # 里程碑 M2 — 下一目标规划
 
+> 状态：**目标已达成（见 [完成说明](./milestone-M2-completion.md)）**  
 > 前置： [M1 阶段总结](./milestone-M1-deep-summary.md) 已达成「真实 RAG 主路径可演示」  
 > 依据：产品规划 V2 P0/P1、Phase 0 设计、Phase 0.5 UI、M1 Bugs 遗留项  
 > 日期：2026-09-14
@@ -159,3 +160,4 @@
 |---|---|
 | 2026-09-14 | 初版：M2 目标、范围、DoD、后续预告 |
 | 2026-09-14 | 开始实现：PyMuPDF + python-docx 解析器接入 Job 流水线 |
+| 2026-09-14 | **验收通过** → [milestone-M2-completion.md](./milestone-M2-completion.md)；下一里程碑见 M3 |

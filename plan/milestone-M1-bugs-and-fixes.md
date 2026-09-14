@@ -23,12 +23,13 @@
 | B3 | P1 | 回答「一下子全部出来」，不符合流式体验 | Fake LLM 无间隔 + 代理缓冲 | 已缓解 | [见下](#5-b3--流式体验一次吐完) |
 | B4 | P1 | 上传成功但无法问答 | 文档未 READY / 向量未写入 | 流程说明 | 同 B1 列表图 |
 | B5 | P2 | MD 失败时误以为是格式问题 | 错误文案偏「查格式」 | 部分改善 | 见 B1 弹窗「建议」 |
-| B6 | P2 | docx 一律解析失败 | 解析器未实现（预期缺口） | 已知未做 | 见 B1 列表中 `书籍.docx` |
+| B6 | P2 | docx 一律解析失败 | 解析器未实现（预期缺口） | **已关闭（M2）** | 见 B1 列表中 `书籍.docx` |
 | B7 | 运维 | 改 `.env` 后行为不变 | Settings 缓存 / 未整进程重启 | 操作约定 | — |
 | B8 | 安全 | Key 出现在对话/截图中 | 本地联调泄露面 | 需轮换习惯 | — |
 | B9 | P1 | Citation 侧栏显示文档 ID 而非文件名 | 历史消息未回填 `document_name` | 已修复 | — |
 | B10 | P2 | 按文件名提问却召回同主题其他文档 | 纯语义检索无文件名约束 | 已增强 | — |
 | B11 | P0 | 删除已问答过的文档报 INTERNAL_ERROR | `message_citation` 外键挡住删 chunk | 已修复 | — |
+| B12 | P0 | 前端白屏，`/api/auth/me` 502 | `RetrievedChunk` 误删导致后端起不来 | 已修复 | — |
 
 截图统一存放：[`plan/assets/`](./assets/)（文件名 `bug-B*` / `ref-*`）。
 
@@ -161,14 +162,14 @@
 
 ---
 
-## 8. B6 — DOCX/PDF 解析失败（已知范围外）
+## 8. B6 — DOCX/PDF 解析失败（已在 M2 关闭）
 
 ### 现象
-- `书籍.docx` 等解析失败（预期）
+- 早期：`书籍.docx` 等解析失败
 
-### 说明
-- 一期上传允许 PDF/DOCX，但解析器仍为骨架；**TXT/MD 才是 M1 验收格式**
-- 列入下一里程碑 M2，见 [下一目标规划](./milestone-M2-next-goals.md)
+### 结论
+- M2 已实现文本型 PDF/DOCX 解析；扫描件 / `.doc` 仍明确失败  
+- 详见 [M2 完成说明](./milestone-M2-completion.md)
 
 ---
 
@@ -206,7 +207,29 @@ GET http://127.0.0.1:8000/ready  → mysql/qdrant ok
 
 ---
 
-## 11. 联调检查清单（验收用）
+## 11. B11 — 删除文档外键失败
+
+### 现象
+- 删除曾参与问答的文档 → `INTERNAL_ERROR` / MySQL 1451  
+- `message_citation.chunk_id` → `document_chunk.id` 无 CASCADE
+
+### 修复
+- 软删文档前先删除该 `document_id` 下的 `message_citation`，再删 chunk
+
+---
+
+## 12. B12 — RetrievedChunk 缺失导致 502 白屏
+
+### 现象
+- 页面空白；`GET /api/auth/me` → 502  
+- 后端 uvicorn 因 `ImportError: RetrievedChunk` 起不来
+
+### 修复
+- 恢复 `app.ai.retrieval.service.RetrievedChunk` 定义
+
+---
+
+## 13. 联调检查清单（验收用）
 
 ```text
 □ Qdrant 容器 Up + /readyz 200
@@ -222,7 +245,7 @@ GET http://127.0.0.1:8000/ready  → mysql/qdrant ok
 
 ---
 
-## 12. 相关代码与提交（参考）
+## 14. 相关代码与提交（参考）
 
 | 主题 | 位置 / 提交提示 |
 |---|---|
@@ -234,13 +257,14 @@ GET http://127.0.0.1:8000/ready  → mysql/qdrant ok
 
 ---
 
-## 13. 变更记录
+## 15. 变更记录
 
 | 日期 | 内容 |
 |---|---|
 | 2026-09-14 | 初版：汇总 M1 联调 Bugs 与修复/约定 |
 | 2026-09-14 | 将联调截图归档至 `plan/assets/` 并在本文挂载 |
 | 2026-09-14 | B9 Citation 回填文件名；B10 问题含文件名时优先检索该文档 |
+| 2026-09-14 | B11 删除前清理 citation；B12 RetrievedChunk；B6 随 M2 关闭 |
 
 ---
 
