@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -9,6 +10,12 @@ from app.ai.llm.base import LLMClient
 
 
 class FakeLLMClient(LLMClient):
+    """Offline stub that still emits incremental SSE-style deltas."""
+
+    # Visible typing cadence for local UX demos (not used by real providers).
+    chunk_size: int = 8
+    chunk_delay_s: float = 0.035
+
     async def invoke(self, messages: list[dict[str, Any]]) -> str:
         parts: list[str] = []
         async for chunk in self.stream(messages):
@@ -42,7 +49,6 @@ class FakeLLMClient(LLMClient):
         else:
             answer = "未提供可用摘录，无法回答。"
 
-        # Stream in small pieces
-        step = 12
-        for i in range(0, len(answer), step):
-            yield answer[i : i + step]
+        for i in range(0, len(answer), self.chunk_size):
+            yield answer[i : i + self.chunk_size]
+            await asyncio.sleep(self.chunk_delay_s)

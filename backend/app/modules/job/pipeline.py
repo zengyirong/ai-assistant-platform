@@ -150,7 +150,10 @@ async def run_parse_index_job(job_id: str) -> None:
             try:
                 embeddings = await embedding.embed_documents(texts)
             except AppError as exc:
-                raise PipelineError(exc.code, exc.message) from exc
+                msg = exc.message
+                if exc.details:
+                    msg = f"{exc.message} | {exc.details}"
+                raise PipelineError(exc.code, msg) from exc
             except Exception as exc:
                 raise PipelineError(
                     "INTERNAL_ERROR",

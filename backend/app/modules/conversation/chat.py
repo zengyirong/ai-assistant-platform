@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import AsyncIterator
 from typing import Any
@@ -153,6 +154,8 @@ async def iter_chat_sse(ctx: dict[str, Any]) -> AsyncIterator[str]:
                 seq=next_seq(),
                 content=delta,
             ).to_sse_line()
+            # Let the ASGI server flush each SSE frame promptly.
+            await asyncio.sleep(0)
 
         full = "".join(parts).strip() or refuse_message()
         async with AsyncSessionLocal() as db:

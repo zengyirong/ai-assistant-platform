@@ -22,6 +22,9 @@ class OpenAICompatibleEmbeddingClient(EmbeddingClient):
         self.api_key = api_key if api_key is not None else settings.EMBEDDING_API_KEY
         self.model = model or settings.EMBEDDING_MODEL
         self.timeout = timeout
+        # Aliyun text-embedding-v3/v4 allow at most 10 inputs per request.
+        self.batch_size = max(1, int(getattr(settings, "EMBEDDING_BATCH_SIZE", 10) or 10))
+        self.dimensions = int(settings.EMBEDDING_DIMENSION)
         if not self.api_key:
             raise AppError(
                 "INTERNAL_ERROR",
@@ -32,12 +35,10 @@ class OpenAICompatibleEmbeddingClient(EmbeddingClient):
     async def embed_documents(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
-        # OpenAI allows batching; keep batches modest
-        batch_size = 64
         vectors: list[list[float]] = []
         async with httpx.AsyncClient(timeout=self.timeout) as client:
-            for i in range(0, len(texts), batch_size):
-                batch = texts[i : i + batch_size]
+            for i in range(0, len(texts), self.batch_size):
+                batch = texts[i : i + self.batch_size]
                 vectors.extend(await self._embed_batch(client, batch))
         return vectors
 
@@ -54,17 +55,27 @@ class OpenAICompatibleEmbeddingClient(EmbeddingClient):
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
+        body: dict = {
+            "model": self.model,
+            "input": texts,
+            "encoding_format": "float",
+        }
+        # OpenAI optional; required/useful for DashScope v3/v4 dimension control.
+        if self.dimensions > 0:
+            body["dimensions"] = self.dimensions
+
         resp = await client.post(
             f"{self.base_url}/embeddings",
             headers=headers,
-            json={"model": self.model, "input": texts},
+            json=body,
         )
         if resp.status_code >= 400:
+            detail = (resp.text or "")[:500]
             raise AppError(
                 "INTERNAL_ERROR",
                 f"Embedding API 失败: HTTP {resp.status_code}",
                 http_status=502,
-                details=resp.text[:500],
+                details=detail,
             )
         payload = resp.json()
         data = payload.get("data") or []
@@ -76,4 +87,14 @@ class OpenAICompatibleEmbeddingClient(EmbeddingClient):
                 "Embedding API 返回数量与输入不一致",
                 http_status=502,
             )
-        return [item["embedding"] for item in data]
+        vectors = [item["embedding"] for item in data]
+        if vectors and len(vectors[0]) != self.dimensions:
+            raise AppError(
+                "INTERNAL_ERROR",
+                (
+                    f"Embedding 维度不匹配: got {len(vectors[0])}, "
+                    f"expect {self.dimensions}"
+                ),
+                http_status=502,
+            )
+        return vectors

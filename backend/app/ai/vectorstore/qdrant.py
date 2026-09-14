@@ -35,6 +35,8 @@ class QdrantVectorStore(VectorStore):
                 api_key=self.api_key,
                 prefer_grpc=False,
                 check_compatibility=False,
+                # Bypass Windows/system HTTP proxy (e.g. Clash 7890) for local Qdrant.
+                trust_env=False,
             )
         return self._client
 

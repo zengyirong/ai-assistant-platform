@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL: str = "text-embedding-3-small"
     EMBEDDING_DIMENSION: int = 1536
     EMBEDDING_PROVIDER: str = "fake"  # fake | openai_compatible
+    # Aliyun DashScope v3/v4 max batch is 10; keep this as default for compatibility.
+    EMBEDDING_BATCH_SIZE: int = 10
 
     QDRANT_COLLECTION: str = "knowledge_chunks"
 

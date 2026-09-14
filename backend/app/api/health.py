@@ -40,11 +40,14 @@ async def check_qdrant() -> bool:
     from app.core.config import settings
 
     try:
-        async with httpx.AsyncClient(timeout=3.0) as client:
+        async with httpx.AsyncClient(timeout=3.0, trust_env=False) as client:
             headers = {}
             if settings.QDRANT_API_KEY:
                 headers["api-key"] = settings.QDRANT_API_KEY
-            resp = await client.get(f"{settings.QDRANT_URL.rstrip('/')}/readyz", headers=headers)
+            resp = await client.get(
+                f"{settings.QDRANT_URL.rstrip('/')}/readyz",
+                headers=headers,
+            )
             return resp.status_code < 500
     except Exception:
         return False
