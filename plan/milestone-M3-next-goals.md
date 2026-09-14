@@ -1,9 +1,9 @@
-# 里程碑 M3 — 下一目标规划（工程化）
+# 里程碑 M3 — 目标规划（工程化）
 
 > 前置： [M2 完成说明](./milestone-M2-completion.md) 已验收  
 > 依据：产品规划 V2 §P1、Phase 0 ADR-008、M1/M2 遗留工程债  
 > 日期：2026-09-14  
-> 状态：**实现完成，待验收**
+> 状态：**已完成** → [milestone-M3-completion.md](./milestone-M3-completion.md)
 
 ---
 
@@ -49,16 +49,7 @@
 ☑ CI 对 main/PR 跑通基础测试（workflow 已就位）
 ☑ README 写清：启动、迁移、测试、.env 注意点
 ☑ M2 能力（PDF/DOCX）不被回归破坏（parsers 单测 + golden smoke）
-```
-
-本地验收建议：
-
-```bash
-cd backend
-alembic stamp 20260914_0001   # 若库已由 DDL 建好
-alembic upgrade head
-ruff check .
-pytest -q
+☑ 本地：ruff + pytest 22 passed（2026-09-14 验收）
 ```
 
 ---
@@ -69,3 +60,4 @@ pytest -q
 |---|---|
 | 2026-09-14 | 初版：M2 验收后的下一里程碑 |
 | 2026-09-14 | 落地 Alembic / CI / fake 测试 / README / citation CASCADE |
+| 2026-09-14 | **验收通过** → [milestone-M3-completion.md](./milestone-M3-completion.md)；下一里程碑见 M4 |

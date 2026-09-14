@@ -59,9 +59,9 @@
 ## 5. 已知限制（带入后续）
 
 1. 语义检索仍可能召回主题相近的其他文档（无文件名时）  
-2. `message_citation.document_id/chunk_id` DDL 仍无 `ON DELETE CASCADE`，靠应用层先删引用  
+2. `message_citation.document_id/chunk_id` 已在 **M3** 改为 `ON DELETE CASCADE`  
 3. Citation 正文角标 `[1][2]` 依赖模型输出，侧栏为准  
-4. Alembic / CI / Golden Dataset 未做 → **M3**
+4. ~~Alembic / CI / Golden Dataset~~ → **M3 已完成**
 
 ---
 
@@ -79,7 +79,7 @@ M2 解析本体若已提交（`feat: 实现 PDF/DOCX 解析…`），本文档�
 
 ## 7. 下一步
 
-→ **[里程碑 M3 — 工程化](./milestone-M3-next-goals.md)**：Alembic、CI、核心回归、Golden Dataset 起步。
+→ **[里程碑 M3 — 工程化](./milestone-M3-completion.md)**（已验收）→ 下一刀见 [M4](./milestone-M4-next-goals.md)。
 
 ---
 
