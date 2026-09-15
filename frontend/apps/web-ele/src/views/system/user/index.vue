@@ -182,10 +182,19 @@ onMounted(async () => {
     <ElDialog v-model="createVisible" title="新增用户" width="480px">
       <ElForm label-width="88px">
         <ElFormItem label="用户名" required>
-          <ElInput v-model="createForm.username" />
+          <ElInput
+            v-model="createForm.username"
+            placeholder="至少 3 位字母/数字/下划线"
+            maxlength="32"
+          />
         </ElFormItem>
         <ElFormItem label="密码" required>
-          <ElInput v-model="createForm.password" type="password" show-password />
+          <ElInput
+            v-model="createForm.password"
+            type="password"
+            show-password
+            placeholder="至少 8 位"
+          />
         </ElFormItem>
         <ElFormItem label="昵称">
           <ElInput v-model="createForm.nickname" />

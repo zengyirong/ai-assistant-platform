@@ -115,8 +115,11 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       const backendMessage =
         (responseData?.message as string | undefined) ||
         (responseData?.error as string | undefined) ||
+        msg ||
         '';
-      ElMessage.error(resolveErrorMessage(code, backendMessage));
+      ElMessage.error(
+        resolveErrorMessage(code, backendMessage, responseData?.details),
+      );
     }),
   );
 

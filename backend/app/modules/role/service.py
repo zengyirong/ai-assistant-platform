@@ -160,6 +160,9 @@ async def set_role_permissions(
         if len(found) != len(ids):
             raise AppError("VALIDATION_ERROR", "存在无效权限 ID", http_status=400)
 
+    # MENU 可见 ≠ API 可调：勾选菜单时自动补齐关联 API，避免「能进页但不能列表」
+    ids = await _expand_menu_related_apis(db, ids)
+
     await db.execute(
         delete(SysRolePermission).where(SysRolePermission.role_id == role_id)
     )
@@ -174,3 +177,69 @@ async def set_role_permissions(
     )
     assert role is not None
     return role_to_dict(role, with_permissions=True)
+
+
+# menu code → extra API codes (beyond stripping "menu:" prefix)
+_MENU_API_EXPAND: dict[str, list[str]] = {
+    "menu:chat": [
+        "conversation:list",
+        "conversation:create",
+        "conversation:delete",
+    ],
+    "menu:chat:workspace": [
+        "conversation:list",
+        "conversation:create",
+    ],
+    "menu:knowledge": [
+        "knowledge:list",
+        "knowledge:create",
+        "knowledge:update",
+        "knowledge:delete",
+        "document:list",
+        "document:upload",
+        "document:delete",
+        "document:retry",
+    ],
+    "menu:knowledge:list": [
+        "knowledge:list",
+        "knowledge:create",
+        "knowledge:update",
+        "knowledge:delete",
+    ],
+    "menu:knowledge:detail": [
+        "knowledge:list",
+        "knowledge:update",
+        "document:list",
+        "document:upload",
+        "document:delete",
+        "document:retry",
+    ],
+}
+
+
+async def _expand_menu_related_apis(
+    db: AsyncSession,
+    permission_ids: list[str],
+) -> list[str]:
+    if not permission_ids:
+        return []
+    all_perms = (await db.execute(select(SysPermission))).scalars().all()
+    by_id = {p.id: p for p in all_perms}
+    api_by_code = {p.code: p.id for p in all_perms if p.type == "API"}
+
+    expanded = set(permission_ids)
+    for pid in list(permission_ids):
+        perm = by_id.get(pid)
+        if perm is None or perm.type != "MENU":
+            continue
+        for api_code in _MENU_API_EXPAND.get(perm.code, []):
+            api_id = api_by_code.get(api_code)
+            if api_id:
+                expanded.add(api_id)
+        # convention: menu:foo:bar → foo:bar if that API exists
+        if perm.code.startswith("menu:"):
+            candidate = perm.code[len("menu:") :]
+            api_id = api_by_code.get(candidate)
+            if api_id:
+                expanded.add(api_id)
+    return list(expanded)

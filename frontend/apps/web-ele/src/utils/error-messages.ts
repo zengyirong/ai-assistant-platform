@@ -40,18 +40,80 @@ const JOB_STAGE_LABELS: Record<string, string> = {
   CANCELLED: '已取消',
 };
 
+const FIELD_LABELS: Record<string, string> = {
+  username: '用户名',
+  password: '密码',
+  nickname: '昵称',
+  email: '邮箱',
+  code: '编码',
+  name: '名称',
+  role_ids: '角色',
+  permission_ids: '权限',
+};
+
+type ValidationDetail = {
+  type?: string;
+  loc?: Array<string | number>;
+  msg?: string;
+  ctx?: Record<string, unknown>;
+};
+
+function fieldLabel(loc?: Array<string | number>): string {
+  if (!loc?.length) return '参数';
+  const parts = loc.filter((p) => p !== 'body' && p !== 'query' && p !== 'path');
+  const key = String(parts[parts.length - 1] ?? '参数');
+  return FIELD_LABELS[key] || key;
+}
+
+/** Turn FastAPI / Pydantic `details[]` into a short Chinese sentence. */
+export function formatValidationDetails(details: unknown): string | null {
+  if (!Array.isArray(details) || details.length === 0) {
+    return null;
+  }
+  const lines = (details as ValidationDetail[]).slice(0, 3).map((item) => {
+    const label = fieldLabel(item.loc);
+    const type = item.type || '';
+    const ctx = item.ctx || {};
+    if (type === 'string_too_short' && ctx.min_length != null) {
+      return `${label}至少 ${ctx.min_length} 个字符`;
+    }
+    if (type === 'string_too_long' && ctx.max_length != null) {
+      return `${label}最多 ${ctx.max_length} 个字符`;
+    }
+    if (type === 'missing') {
+      return `${label}不能为空`;
+    }
+    if (type === 'value_error' || type.includes('enum')) {
+      return `${label}取值无效`;
+    }
+    if (item.msg) {
+      return `${label}：${item.msg}`;
+    }
+    return `${label}校验失败`;
+  });
+  return lines.join('；');
+}
+
 export function resolveErrorMessage(
   code?: string | null,
   fallback?: string | null,
+  details?: unknown,
 ): string {
+  const fromDetails = formatValidationDetails(details);
+  if (fromDetails) {
+    return fromDetails;
+  }
   // Prefer backend `message`: same code can mean different UX
   // (e.g. AUTH_UNAUTHORIZED = wrong password vs session expired).
   const text = fallback?.trim();
-  if (text) {
+  if (text && text !== '参数校验失败') {
     return text;
   }
   if (code && API_ERROR_MESSAGES[code]) {
     return API_ERROR_MESSAGES[code];
+  }
+  if (text) {
+    return text;
   }
   if (code) {
     return code;

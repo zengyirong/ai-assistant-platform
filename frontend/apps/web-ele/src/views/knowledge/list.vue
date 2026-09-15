@@ -142,7 +142,7 @@ async function submitCreate() {
       });
       ElMessage.success('知识库已创建');
       drawerVisible.value = false;
-      await router.push({ name: 'KnowledgeDetail', params: { id: created.id } });
+      await router.push(`/knowledge/detail/${created.id}`);
     } catch {
       // interceptor
     } finally {
@@ -152,7 +152,7 @@ async function submitCreate() {
 }
 
 function goDetail(row: KnowledgeBase) {
-  void router.push({ name: 'KnowledgeDetail', params: { id: row.id } });
+  void router.push(`/knowledge/detail/${row.id}`);
 }
 
 async function onDelete(row: KnowledgeBase) {

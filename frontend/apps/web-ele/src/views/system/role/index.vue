@@ -101,7 +101,9 @@ async function savePerms() {
     ...(tree?.getHalfCheckedKeys?.() ?? []),
   ] as string[];
   await setRolePermissionsApi(permTarget.value.id, keys);
-  ElMessage.success('权限已保存（重新登录后菜单生效）');
+  ElMessage.success(
+    '权限已保存（勾选菜单会自动补齐关联 API；重新登录后生效）',
+  );
   permVisible.value = false;
   await load();
 }
@@ -161,7 +163,11 @@ onMounted(() => {
       </template>
     </ElDialog>
 
-    <ElDialog v-model="permVisible" title="分配权限" width="520px">
+    <ElDialog v-model="permVisible" title="分配权限" width="560px">
+      <p class="text-muted-foreground mb-3 text-sm">
+        请同时关注类型为 API 的节点；仅勾选 MENU
+        会导致能看见菜单但接口 403。保存时会按菜单自动补齐常用 API。
+      </p>
       <ElTree
         ref="treeRef"
         :data="treeData()"
