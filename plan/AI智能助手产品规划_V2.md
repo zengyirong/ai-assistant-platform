@@ -1827,39 +1827,62 @@ job 正确
 
 ---
 
-# 42. 面试叙事
+# 42. 产品演进与设计思路
 
-项目可以按以下思路介绍：
+项目整体不是一开始就直接开发 Hospital Agent 或 HR Agent，而是先从两个业务场景中识别共性能力，再逐步完成平台化、业务化和智能化演进。
 
-> 我没有一开始直接做 Hospital Agent 或 HR Agent，而是先把两个业务都会重复使用的能力抽象成一个 AI 应用平台底座，包括 RBAC、知识库、文档解析、向量检索、RAG、SSE、Citation、Conversation 和 Audit。
+> 我没有一开始直接做 Hospital Agent 或 HR Agent，而是先分析两个业务中会重复使用的能力，将这些能力抽象成统一的 AI 应用平台底座，包括 RBAC、知识库、文档解析、向量检索、RAG、SSE、Citation、Conversation、Audit 等。
 
 一期解决：
 
-```text
-平台能力
+```markdown
+解决通用平台能力
+AI Application Platform
+        ↓
+RBAC
+Knowledge Base
+Document Parsing
+Vector Search
+RAG
+SSE
+Citation
+Conversation
+Audit
 ```
 
 二期解决：
 
 ```text
-AI + 医疗业务
+AI + 医疗业务:
+AI Platform
+     +
+医疗知识
+医疗业务流程
+医疗场景
 ```
 
 三期解决：
 
 ```text
 AI + HR Workflow + Agent
+AI Platform
+     +
+HR Business
+     +
+Workflow
+     +
+Agent
 ```
 
 体现：
 
-- 架构思维
-- 产品思维
-- 业务思维
-- 技术思维
-- 测试意识
-- 安全意识
-- AI 工程化能力
+- 架构思维:识别共性能力，避免重复建设
+- 产品思维:不是为了堆技术，而是分阶段解决问题
+- 业务思维：平台最终必须服务真实业务
+- 技术思维：RAG，向量检索,SSE,Agent 等技术合理落位
+- 测试意识：平台能力，RAG,Workflow、Agent 均需要可验证
+- 安全意识:RBAC、Audit、数据隔离、工具权限控制
+- AI 工程化能力:从 Demo 走向可维护、可观测、可迭代的 AI 应用
 
 ---
 

@@ -1,4 +1,4 @@
-import { initPreferences } from '@vben/preferences';
+import { initPreferences, updatePreferences } from '@vben/preferences';
 import { unmountGlobalLoading } from '@vben/utils';
 
 import { overridesPreferences } from './preferences';
@@ -13,10 +13,15 @@ async function initApplication() {
   const appVersion = import.meta.env.VITE_APP_VERSION;
   const namespace = `${import.meta.env.VITE_APP_NAMESPACE}-${appVersion}-${env}`;
 
-  // app偏好设置初始化
+  // app偏好设置初始化（本地缓存会覆盖 overrides；M7 必须强制 backend 菜单）
   await initPreferences({
     namespace,
     overrides: overridesPreferences,
+  });
+  updatePreferences({
+    app: {
+      accessMode: 'backend',
+    },
   });
 
   // 启动应用并挂载
