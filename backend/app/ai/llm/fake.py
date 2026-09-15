@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -31,10 +32,16 @@ class FakeLLMClient(LLMClient):
 
         # Extract a short excerpt from knowledge block if present
         excerpt = ""
+        cite_marks = ""
         if "【知识库摘录】" in user:
             body = user.split("【知识库摘录】", 1)[1]
             body = body.split("【用户问题】", 1)[0].strip()
             excerpt = body[:180].replace("\n", " ").strip()
+            refs = sorted({int(n) for n in re.findall(r"\[(\d+)\]", body)}, key=int)
+            if refs:
+                cite_marks = "".join(f"[{n}]" for n in refs[:3])
+            elif excerpt:
+                cite_marks = "[1]"
 
         question = ""
         if "【用户问题】" in user:
@@ -45,6 +52,7 @@ class FakeLLMClient(LLMClient):
             answer = (
                 f"根据知识库内容，关于「{question or '该问题'}」的要点如下："
                 f"{excerpt}"
+                f"（详见{cite_marks}）"
             )
         else:
             answer = "未提供可用摘录，无法回答。"

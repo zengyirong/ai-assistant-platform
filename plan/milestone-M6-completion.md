@@ -47,7 +47,7 @@
 
 | 项 | 说明 |
 |---|---|
-| Citation / 会话边角 | 角标与侧栏一致性等小修 |
+| Citation / 会话边角 | 角标与侧栏一致性等小修 → **已在 M7 收口** |
 
 ---
 
@@ -72,8 +72,8 @@ docs: 固化 M6 一期收口完成说明；seed 增加 demo 演示账号
 
 一期 **P0 + P1 主线已收口**。可选方向（另立里程碑，勿默认膨胀）：
 
-1. **系统管理**（用户/角色/**菜单**/空间 UI）— 完整 RBAC 闭环；见 [M7](./milestone-M7-next-goals.md)  
-2. Citation / 会话体验小修  
+1. **系统管理**（用户/角色/**菜单**/空间 UI）— 完整 RBAC 闭环 — **已完成**，见 [M7](./milestone-M7-completion.md)  
+2. Citation / 会话体验小修 — **已在 M7 收口**  
 3. **P2**：Redis / Celery / MinIO / OCR / Rerank / Hybrid Search  
 
 日常演示与交接以 [phase1-handoff.md](./phase1-handoff.md) 为准。

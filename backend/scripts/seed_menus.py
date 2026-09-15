@@ -1,4 +1,4 @@
-"""Idempotent seed of MENU permissions + role bindings (M7)."""
+"""Idempotent seed of MENU/BUTTON permissions + role bindings (M7)."""
 
 from __future__ import annotations
 
@@ -198,6 +198,38 @@ MENUS: list[dict] = [
     },
 ]
 
+# Thin BUTTON permissions (UI gate; API still requires matching API codes)
+BUTTONS: list[dict] = [
+    {
+        "id": "b0000000-0000-0000-0000-000000000031",
+        "code": "btn:system:user:create",
+        "name": "新增用户",
+        "type": "BUTTON",
+        "parent_id": "m0000000-0000-0000-0000-000000000031",
+        "path": None,
+        "component": None,
+        "icon": None,
+        "sort_order": 0,
+        "visible": 1,
+        "status": "ACTIVE",
+        "redirect": None,
+    },
+    {
+        "id": "b0000000-0000-0000-0000-000000000021",
+        "code": "btn:knowledge:create",
+        "name": "新建知识库",
+        "type": "BUTTON",
+        "parent_id": "m0000000-0000-0000-0000-000000000021",
+        "path": None,
+        "component": None,
+        "icon": None,
+        "sort_order": 0,
+        "visible": 1,
+        "status": "ACTIVE",
+        "redirect": None,
+    },
+]
+
 USER_MENU_IDS = {
     "m0000000-0000-0000-0000-000000000001",
     "m0000000-0000-0000-0000-000000000002",
@@ -211,7 +243,7 @@ USER_MENU_IDS = {
 
 async def seed_menus() -> int:
     async with AsyncSessionLocal() as db:
-        for item in MENUS:
+        for item in [*MENUS, *BUTTONS]:
             row = await db.get(SysPermission, item["id"])
             if row is None:
                 db.add(SysPermission(**item))
@@ -222,6 +254,9 @@ async def seed_menus() -> int:
         await db.flush()
         menus = (
             await db.execute(select(SysPermission).where(SysPermission.type == "MENU"))
+        ).scalars().all()
+        buttons = (
+            await db.execute(select(SysPermission).where(SysPermission.type == "BUTTON"))
         ).scalars().all()
         for role_id, allow in ((ADMIN_ROLE, None), (USER_ROLE, USER_MENU_IDS)):
             for perm in menus:
@@ -241,13 +276,30 @@ async def seed_menus() -> int:
                             permission_id=perm.id,
                         )
                     )
+            # BUTTON：仅 ADMIN（演示薄落地；USER 无系统管理与建库按钮）
+            if role_id == ADMIN_ROLE:
+                for perm in buttons:
+                    exists = await db.scalar(
+                        select(SysRolePermission.id).where(
+                            SysRolePermission.role_id == role_id,
+                            SysRolePermission.permission_id == perm.id,
+                        )
+                    )
+                    if not exists:
+                        db.add(
+                            SysRolePermission(
+                                id=new_id(),
+                                role_id=role_id,
+                                permission_id=perm.id,
+                            )
+                        )
         await db.commit()
-        return len(menus)
+        return len(menus) + len(buttons)
 
 
 def main() -> None:
     count = asyncio.run(seed_menus())
-    print(f"seeded {count} MENU permissions")
+    print(f"seeded {count} MENU/BUTTON permissions")
 
 
 if __name__ == "__main__":

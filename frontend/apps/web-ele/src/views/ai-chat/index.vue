@@ -54,6 +54,8 @@ const messages = ref<ChatMessage[]>([]);
 const messagesLoading = ref(false);
 const citations = ref<SseCitationItem[]>([]);
 const citationDrawerVisible = ref(false);
+const focusedMessageId = ref<string | null>(null);
+const activeCitationIndex = ref<number | null>(null);
 
 const question = ref('');
 const streamState = ref<StreamState>('IDLE');
@@ -61,6 +63,39 @@ const streamError = ref('');
 const abortController = ref<AbortController | null>(null);
 
 const messageListRef = ref<HTMLElement | null>(null);
+
+type ContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'cite'; n: number };
+
+function parseCitationParts(content: string): ContentPart[] {
+  const parts: ContentPart[] = [];
+  const re = /\[(\d+)\]/g;
+  let last = 0;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(content))) {
+    if (match.index > last) {
+      parts.push({ type: 'text', text: content.slice(last, match.index) });
+    }
+    parts.push({ type: 'cite', n: Number(match[1]) });
+    last = match.index + match[0].length;
+  }
+  if (last < content.length) {
+    parts.push({ type: 'text', text: content.slice(last) });
+  }
+  return parts.length ? parts : [{ type: 'text', text: content }];
+}
+
+function contentHasCiteMarks(content: string) {
+  return /\[\d+\]/.test(content);
+}
+
+function isMobileViewport() {
+  return (
+    typeof window !== 'undefined' &&
+    window.matchMedia('(max-width: 1023px)').matches
+  );
+}
 
 const isStreaming = computed(
   () => streamState.value === 'SENDING' || streamState.value === 'STREAMING',
@@ -119,10 +154,14 @@ async function loadMessages(conversationId: string) {
       .reverse()
       .find((m) => m.role === 'ASSISTANT' && m.citations?.length);
     citations.value = lastAssistant?.citations ?? [];
+    focusedMessageId.value = lastAssistant?.id ?? null;
+    activeCitationIndex.value = null;
     scrollToBottom();
   } catch {
     messages.value = [];
     citations.value = [];
+    focusedMessageId.value = null;
+    activeCitationIndex.value = null;
   } finally {
     messagesLoading.value = false;
   }
@@ -155,6 +194,8 @@ async function createConversation() {
     activeConversationId.value = conv.id;
     messages.value = [];
     citations.value = [];
+    focusedMessageId.value = null;
+    activeCitationIndex.value = null;
     streamState.value = 'IDLE';
     ElMessage.success('已创建新会话');
   } catch {
@@ -346,10 +387,22 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
-function focusCitations(msg: ChatMessage) {
-  if (msg.role === 'ASSISTANT' && msg.citations?.length) {
-    citations.value = msg.citations;
+function focusCitations(msg: ChatMessage, citeIndex?: number) {
+  if (msg.role !== 'ASSISTANT' || !msg.citations?.length) return;
+  citations.value = msg.citations;
+  focusedMessageId.value = msg.id;
+  activeCitationIndex.value =
+    citeIndex != null && citeIndex >= 0 && citeIndex < msg.citations.length
+      ? citeIndex
+      : null;
+  if (isMobileViewport()) {
+    citationDrawerVisible.value = true;
   }
+}
+
+function onCiteClick(msg: ChatMessage, n: number, e: Event) {
+  e.stopPropagation();
+  focusCitations(msg, n - 1);
 }
 
 onMounted(async () => {
@@ -453,14 +506,54 @@ onUnmounted(() => {
           >
             <div
               class="max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap"
-              :class="
+              :class="[
                 msg.role === 'USER'
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-accent'
-              "
+                  : 'bg-accent',
+                focusedMessageId === msg.id ? 'ring-primary/40 ring-2' : '',
+              ]"
             >
               <div v-if="msg.role === 'ASSISTANT' && !msg.content && isStreaming">
                 正在思考…
+              </div>
+              <div v-else-if="msg.role === 'ASSISTANT'">
+                <template
+                  v-for="(part, pi) in parseCitationParts(msg.content || '')"
+                  :key="`${msg.id}-${pi}`"
+                >
+                  <button
+                    v-if="part.type === 'cite'"
+                    type="button"
+                    class="text-primary mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded px-1 text-xs font-semibold underline-offset-2 hover:underline"
+                    :class="
+                      activeCitationIndex === part.n - 1 &&
+                      focusedMessageId === msg.id
+                        ? 'bg-primary/15'
+                        : 'bg-background/60'
+                    "
+                    @click="onCiteClick(msg, part.n, $event)"
+                  >
+                    [{{ part.n }}]
+                  </button>
+                  <span v-else>{{ part.text }}</span>
+                </template>
+                <div
+                  v-if="
+                    msg.citations?.length &&
+                    !contentHasCiteMarks(msg.content || '')
+                  "
+                  class="mt-2 flex flex-wrap gap-1"
+                >
+                  <button
+                    v-for="(_c, idx) in msg.citations"
+                    :key="`${msg.id}-chip-${idx}`"
+                    type="button"
+                    class="text-primary border-border bg-background/60 inline-flex h-5 min-w-5 items-center justify-center rounded border px-1 text-xs font-semibold"
+                    @click="onCiteClick(msg, idx + 1, $event)"
+                  >
+                    [{{ idx + 1 }}]
+                  </button>
+                </div>
               </div>
               <div v-else>{{ msg.content }}</div>
               <div
@@ -468,6 +561,12 @@ onUnmounted(() => {
                 class="mt-1 text-xs opacity-80"
               >
                 生成失败，可重新提问。
+              </div>
+              <div
+                v-else-if="msg.role === 'ASSISTANT' && msg.status === 'ABORTED'"
+                class="mt-1 text-xs opacity-80"
+              >
+                生成已停止。
               </div>
             </div>
           </div>
@@ -537,13 +636,20 @@ onUnmounted(() => {
           <div
             v-for="(c, idx) in citations"
             :key="`${c.chunk_id}-${idx}`"
-            class="border-border rounded border p-3 text-xs"
+            class="border-border rounded border p-3 text-xs transition-colors"
+            :class="
+              activeCitationIndex === idx ? 'border-primary bg-primary/5' : ''
+            "
+            @click="activeCitationIndex = idx"
           >
             <div class="mb-1 font-medium">
               [{{ idx + 1 }}]
               {{ c.document_name || `文档 ${c.document_id.slice(0, 8)}` }}
             </div>
-            <div class="text-muted-foreground mb-2">
+            <div
+              v-if="c.page != null || c.section"
+              class="text-muted-foreground mb-2"
+            >
               <span v-if="c.page != null">第 {{ c.page }} 页</span>
               <span v-if="c.section"> · {{ c.section }}</span>
             </div>
@@ -565,12 +671,19 @@ onUnmounted(() => {
         <div
           v-for="(c, idx) in citations"
           :key="`m-${c.chunk_id}-${idx}`"
-          class="border-border rounded border p-3 text-xs"
+          class="border-border rounded border p-3 text-xs transition-colors"
+          :class="
+            activeCitationIndex === idx ? 'border-primary bg-primary/5' : ''
+          "
+          @click="activeCitationIndex = idx"
         >
           <div class="mb-1 font-medium">
             [{{ idx + 1 }}] {{ c.document_name || `文档 ${c.document_id.slice(0, 8)}` }}
           </div>
-          <div class="text-muted-foreground mb-2">
+          <div
+            v-if="c.page != null || c.section"
+            class="text-muted-foreground mb-2"
+          >
             <span v-if="c.page != null">第 {{ c.page }} 页</span>
             <span v-if="c.section"> · {{ c.section }}</span>
           </div>

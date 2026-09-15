@@ -209,7 +209,13 @@ onMounted(() => {
         </ElSelect>
         <ElButton @click="loadList">刷新</ElButton>
       </ElSpace>
-      <ElButton type="primary" @click="openCreate">新建知识库</ElButton>
+      <ElButton
+        v-access:code="'btn:knowledge:create'"
+        type="primary"
+        @click="openCreate"
+      >
+        新建知识库
+      </ElButton>
     </div>
 
     <ElTable v-loading="loading" :data="filteredItems" stripe>

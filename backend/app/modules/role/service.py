@@ -160,7 +160,7 @@ async def set_role_permissions(
         if len(found) != len(ids):
             raise AppError("VALIDATION_ERROR", "存在无效权限 ID", http_status=400)
 
-    # MENU 可见 ≠ API 可调：勾选菜单时自动补齐关联 API，避免「能进页但不能列表」
+    # MENU 可见 ≠ API 可调：勾选菜单时自动补齐关联 API / 子 BUTTON
     ids = await _expand_menu_related_apis(db, ids)
 
     await db.execute(
@@ -228,6 +228,11 @@ async def _expand_menu_related_apis(
     api_by_code = {p.code: p.id for p in all_perms if p.type == "API"}
 
     expanded = set(permission_ids)
+    selected_menu_ids = {
+        pid
+        for pid in permission_ids
+        if (by_id.get(pid) is not None and by_id[pid].type == "MENU")
+    }
     for pid in list(permission_ids):
         perm = by_id.get(pid)
         if perm is None or perm.type != "MENU":
@@ -242,4 +247,12 @@ async def _expand_menu_related_apis(
             api_id = api_by_code.get(candidate)
             if api_id:
                 expanded.add(api_id)
+    # 勾选 MENU 时自动挂上其子 BUTTON（薄按钮权限）
+    for perm in all_perms:
+        if (
+            perm.type == "BUTTON"
+            and perm.parent_id
+            and perm.parent_id in selected_menu_ids
+        ):
+            expanded.add(perm.id)
     return list(expanded)

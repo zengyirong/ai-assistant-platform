@@ -1,8 +1,8 @@
 # 一期交接 / 演示说明
 
 > 对应里程碑：[M6](./milestone-M6-next-goals.md)  
-> 更新日期：2026-09-14  
-> 范围：文档 RAG 智能查询助手（平台底座）一期可交接态
+> 更新日期：2026-09-15  
+> 范围：文档 RAG 智能查询助手（平台底座）一期可交接态 + M7 系统管理 / RBAC
 
 ---
 
@@ -51,12 +51,12 @@ pnpm run dev:ele
 登录 admin
   → 知识库：新建 / 打开
   → 文档：上传 txt|md|pdf|docx → 等 Job 成功
-  → 问答：选 KB → 提问 → 看流式回答与引用
+  → 问答：选 KB → 提问 → 看流式回答、正文角标 [n] 与右侧引用
   →（可选）成员：从本 org 用户列表加人
-  →（ADMIN）审计日志：侧栏「审计日志」或 GET /api/v1/audit-logs
+  →（ADMIN）系统管理：用户 / 角色 / 菜单 / 空间 / 审计
 ```
 
-**可选 API（M6）**：`POST /api/v1/users`（仅 ADMIN）同 org 创建 `USER`，便于成员协作演示，无需手写 SQL。
+**可选 API**：`POST /api/v1/users`（仅 ADMIN）同 org 创建用户；菜单种子 `python scripts/seed_menus.py`。
 
 ---
 
@@ -77,7 +77,7 @@ CI：`.github/workflows/backend-ci.yml`
 
 - 默认 `LLM_PROVIDER` / `EMBEDDING_PROVIDER=fake` 可离线演示；真实模型需改 `.env` 并注意维度与 collection
 - 无 Redis / Celery / MinIO / OCR / Rerank / Hybrid Search（规划 P2）
-- **完整系统管理**（组织/角色/菜单全套）未做；能力债见产品 IA，另立里程碑
+- 无部门树；系统管理见 [M7 完成说明](./milestone-M7-completion.md)
 - 审计写入 best-effort，失败不阻断业务
 
 ---
@@ -97,3 +97,4 @@ CI：`.github/workflows/backend-ci.yml`
 |---|---|
 | M1–M5 | `plan/milestone-M*-completion.md` |
 | M6 | [milestone-M6-completion.md](./milestone-M6-completion.md)（已验收） |
+| M7 | [milestone-M7-completion.md](./milestone-M7-completion.md)（系统管理 / RBAC，已验收） |

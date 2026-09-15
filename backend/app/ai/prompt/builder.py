@@ -34,7 +34,7 @@ def build_rag_messages(
     user_content = (
         f"【知识库摘录】\n{context}\n\n"
         f"【用户问题】\n{question}\n\n"
-        "请基于摘录作答；必要时可简要引用摘录编号。"
+        "请基于摘录作答；引用处请使用 [1][2] 等形式标注对应摘录编号。"
     )
 
     messages: list[dict[str, Any]] = [{"role": "system", "content": system}]

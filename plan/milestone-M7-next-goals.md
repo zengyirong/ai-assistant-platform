@@ -3,7 +3,7 @@
 > 前置：[M6 完成说明](./milestone-M6-completion.md) 已验收（一期 RAG 底座收口）  
 > 依据：Phase 0.5 IA、Phase 0 `sys_*` 表、产品规划 V2 §11 RBAC；前端参考 [Vben 系统管理](https://www.vben.pro/#/system/)  
 > 日期：2026-09-14  
-> 状态：**进行中**
+> 状态：**已完成**（见 [milestone-M7-completion.md](./milestone-M7-completion.md)）
 
 ---
 
@@ -75,9 +75,9 @@ status        # ACTIVE / DISABLED
 
 ## 4. Should
 
-- 按钮级权限（`type=BUTTON`）在 1～2 个关键页落地（如「新建用户」）  
-- 菜单管理页支持拖拽排序（可降级为数字 `sort_order`）  
-- Citation 小修（M6 结转，非本里程碑主线）  
+- [x] 按钮级权限（`type=BUTTON`）在 1～2 个关键页落地（「新增用户」「新建知识库」）  
+- [ ] 菜单管理页支持拖拽排序（可降级为数字 `sort_order`）— **未做，保留 sort_order**  
+- [x] Citation 小修（M6 结转） 
 
 ---
 
@@ -112,11 +112,11 @@ status        # ACTIVE / DISABLED
 ## 7. 退出标准（草案）
 
 ```text
-□ ADMIN 可管理本 org 用户、角色、菜单权限树
-□ 角色变更后，用户重新登录（或刷新权限）菜单与 API 权限一致
-□ 无部门相关 UI/API/表
-□ 空间管理页可用；审计仍在系统管理下
-□ 自动化测试覆盖关键 Admin API；plan 完成说明
+☑ ADMIN 可管理本 org 用户、角色、菜单权限树
+☑ 角色变更后，用户重新登录（或刷新权限）菜单与 API 权限一致
+☑ 无部门相关 UI/API/表
+☑ 空间管理页可用；审计仍在系统管理下
+☑ 自动化测试覆盖关键 Admin API；plan 完成说明
 ```
 
 ---
@@ -139,3 +139,4 @@ status        # ACTIVE / DISABLED
 | 日期 | 内容 |
 |---|---|
 | 2026-09-14 | 初版：系统管理薄版 + **菜单入闭环**；明确无部门 |
+| 2026-09-15 | 验收通过；Should（BUTTON + Citation）收口；见 completion |

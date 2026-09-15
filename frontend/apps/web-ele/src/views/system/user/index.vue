@@ -171,7 +171,13 @@ onMounted(async () => {
         @keyup.enter="load"
       />
       <ElButton type="primary" @click="load">查询</ElButton>
-      <ElButton type="primary" @click="createVisible = true">新增用户</ElButton>
+      <ElButton
+        v-access:code="'btn:system:user:create'"
+        type="primary"
+        @click="createVisible = true"
+      >
+        新增用户
+      </ElButton>
     </div>
 
     <ElTable v-loading="loading" :data="items" stripe>

@@ -1,4 +1,4 @@
--- MENU permissions (RBAC type=MENU on sys_permission). Safe to re-run.
+-- MENU + BUTTON permissions (RBAC on sys_permission). Safe to re-run.
 -- Requires: alembic 20260915_0003 (menu columns) + roles from seed_v1.sql
 
 USE ai_assistant;
@@ -59,11 +59,27 @@ ON DUPLICATE KEY UPDATE
   redirect = VALUES(redirect),
   parent_id = VALUES(parent_id);
 
--- ADMIN: all MENU rows
+-- Thin BUTTON permissions (UI gate)
+INSERT INTO sys_permission (
+  id, code, name, type, parent_id, path, component, icon, sort_order, visible, status, redirect
+) VALUES
+  ('b0000000-0000-0000-0000-000000000031', 'btn:system:user:create', '新增用户', 'BUTTON',
+   'm0000000-0000-0000-0000-000000000031',
+   NULL, NULL, NULL, 0, 1, 'ACTIVE', NULL),
+  ('b0000000-0000-0000-0000-000000000021', 'btn:knowledge:create', '新建知识库', 'BUTTON',
+   'm0000000-0000-0000-0000-000000000021',
+   NULL, NULL, NULL, 0, 1, 'ACTIVE', NULL)
+ON DUPLICATE KEY UPDATE
+  name = VALUES(name),
+  parent_id = VALUES(parent_id),
+  type = VALUES(type),
+  status = VALUES(status);
+
+-- ADMIN: all MENU + BUTTON rows
 INSERT INTO sys_role_permission (id, role_id, permission_id)
 SELECT UUID(), @role_admin, p.id
 FROM sys_permission p
-WHERE p.type = 'MENU'
+WHERE p.type IN ('MENU', 'BUTTON')
   AND NOT EXISTS (
     SELECT 1 FROM sys_role_permission rp
     WHERE rp.role_id = @role_admin AND rp.permission_id = p.id
