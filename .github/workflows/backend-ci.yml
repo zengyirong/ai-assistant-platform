@@ -79,6 +79,7 @@ jobs:
         run: |
           mysql -h 127.0.0.1 -P 3306 -uroot -proot ai_assistant \
             --default-character-set=utf8mb4 < ../docs/mysql/seed_v1.sql
+          python scripts/seed_menus.py
 
       - name: Pytest
         run: pytest -q

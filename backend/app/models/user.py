@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, func
+from sqlalchemy import DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -20,6 +20,13 @@ class SysPermission(Base, UUIDPrimaryKeyMixin):
     parent_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("sys_permission.id", ondelete="SET NULL")
     )
+    path: Mapped[str | None] = mapped_column(String(255))
+    component: Mapped[str | None] = mapped_column(String(255))
+    icon: Mapped[str | None] = mapped_column(String(128))
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    visible: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="ACTIVE")
+    redirect: Mapped[str | None] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=False),
         server_default=func.current_timestamp(3),

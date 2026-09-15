@@ -13,6 +13,8 @@ export const overridesPreferences = defineOverridesPreferences({
   app: {
     name: import.meta.env.VITE_APP_TITLE,
     defaultHomePath: '/dashboard/home',
+    /** M7: menus from GET /menu/all (sys_permission type=MENU) */
+    accessMode: 'backend',
   },
   copyright: appCopyrightPreferences,
 });

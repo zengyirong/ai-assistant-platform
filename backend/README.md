@@ -106,4 +106,12 @@ Demo logins (after seed):
 | `admin` | `Admin@123456` | ADMIN |
 | `demo` | `Demo@123456` | USER |
 
+After Alembic `20260915_0003`, seed menus:
+
+```bash
+python scripts/seed_menus.py
+```
+
 ADMIN may also create more same-org USER accounts via `POST /api/v1/users` (see `docs/api.md` §4.1.1).
+
+System admin (M7): `/api/v1/roles`, `/api/v1/permissions`, `/api/v1/menu/all`, spaces CRUD.

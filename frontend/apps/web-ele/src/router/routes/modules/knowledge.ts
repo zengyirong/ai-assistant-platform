@@ -24,7 +24,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         name: 'KnowledgeDetail',
-        path: 'detail/:id',
+        path: 'detail/:kbId',
         component: () => import('#/views/knowledge/detail.vue'),
         meta: {
           hideInMenu: true,

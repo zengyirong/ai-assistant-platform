@@ -65,15 +65,16 @@ SSE 路径上的业务错误通过 `event: error` 下发，`data.code` 使用上
 | POST | `/api/v1/auth/login` | 否 | — | — |
 | POST | `/api/v1/auth/logout` | 是 | — | — |
 | GET | `/api/v1/auth/me` | 是 | — | — |
-| GET | `/api/v1/users` | 是 | — | 本 org ACTIVE 用户（`q` 搜 username/nickname） |
-| POST | `/api/v1/users` | 是 | — | **ADMIN**；同 org 创建 `USER`（薄接口，非完整用户管理） |
+| GET | `/api/v1/users` | 是 | — | 本 org 用户；ADMIN 可 `include_disabled` |
+| POST | `/api/v1/users` | 是 | — | **ADMIN**；创建用户并可指定 `role_ids` |
+| PUT | `/api/v1/users/{id}` | 是 | — | **ADMIN**；昵称/状态 |
+| POST | `/api/v1/users/{id}/reset-password` | 是 | — | **ADMIN** |
+| PUT | `/api/v1/users/{id}/roles` | 是 | — | **ADMIN** |
+| GET/POST/PUT | `/api/v1/roles...` | 是 | — | **ADMIN**；含 `PUT .../permissions` |
+| GET/POST/PUT/DELETE | `/api/v1/permissions...` | 是 | — | **ADMIN**；权限/菜单树（`tree=true`） |
+| GET | `/api/v1/menu/all` | 是 | — | 当前用户 MENU 路由树（Vben backend） |
 | GET | `/api/v1/audit-logs` | 是 | — | **ADMIN**；本 org；可选 `action` / `user_id` |
-| GET | `/api/v1/spaces` | 是 | — | 本 org 可见 space |
-| POST | `/api/v1/spaces` | 是 | — | 本 org |
-| GET | `/api/v1/spaces/{id}` | 是 | — | 成员或 ADMIN |
-| PUT | `/api/v1/spaces/{id}` | 是 | — | OWNER / ADMIN |
-| DELETE | `/api/v1/spaces/{id}` | 是 | — | OWNER / ADMIN；**禁止删 Default Space** |
-| GET/POST/DELETE | `/api/v1/spaces/{id}/members...` | 是 | — | OWNER / ADMIN |
+| GET/POST/PUT | `/api/v1/spaces...` | 是 | — | 列表全员；写操作 **ADMIN**；成员管理 |
 | GET | `/api/v1/knowledge-bases` | 是 | `knowledge:list` | 可访问 KB 过滤 |
 | POST | `/api/v1/knowledge-bases` | 是 | `knowledge:create` | — |
 | GET | `/api/v1/knowledge-bases/{id}` | 是 | `knowledge:list` | KB 数据权限 |

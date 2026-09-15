@@ -3,13 +3,15 @@
 > 前置：[M6 完成说明](./milestone-M6-completion.md) 已验收（一期 RAG 底座收口）  
 > 依据：Phase 0.5 IA、Phase 0 `sys_*` 表、产品规划 V2 §11 RBAC；前端参考 [Vben 系统管理](https://www.vben.pro/#/system/)  
 > 日期：2026-09-14  
-> 状态：**待启动**
+> 状态：**进行中**
 
 ---
 
 ## 1. 一句话目标
 
 **补齐系统管理面，打通「用户 → 角色 → 菜单/权限 → 前端可见 + API 鉴权」闭环**；复用 Vben Admin 5 系统管理交互，**不含部门**。
+
+> 实现约定：`accessMode=backend`，菜单来自 `GET /api/v1/menu/all`（`sys_permission` type=MENU）。
 
 ---
 

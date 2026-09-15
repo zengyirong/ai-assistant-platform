@@ -60,7 +60,7 @@ defineOptions({ name: 'KnowledgeDetail' });
 
 const route = useRoute();
 const router = useRouter();
-const kbId = computed(() => String(route.params.id || ''));
+const kbId = computed(() => String(route.params.kbId || route.params.id || ''));
 
 const loading = ref(false);
 const kb = ref<KnowledgeBase | null>(null);
