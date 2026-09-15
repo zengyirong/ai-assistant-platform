@@ -33,6 +33,9 @@ defineOptions({ name: 'SystemMenu' });
 const loading = ref(false);
 const items = ref<SystemPermission[]>([]);
 const createVisible = ref(false);
+const editVisible = ref(false);
+const editId = ref('');
+
 const form = reactive({
   code: '',
   name: '',
@@ -43,7 +46,35 @@ const form = reactive({
   icon: '',
   sort_order: 0,
   visible: true,
+  status: 'ACTIVE',
+  redirect: '',
 });
+
+const editForm = reactive({
+  name: '',
+  parent_id: '' as string | '',
+  path: '',
+  component: '',
+  icon: '',
+  sort_order: 0,
+  visible: true,
+  status: 'ACTIVE',
+  redirect: '',
+});
+
+function resetCreateForm() {
+  form.code = '';
+  form.name = '';
+  form.type = 'MENU';
+  form.parent_id = '';
+  form.path = '';
+  form.component = '';
+  form.icon = '';
+  form.sort_order = 0;
+  form.visible = true;
+  form.status = 'ACTIVE';
+  form.redirect = '';
+}
 
 async function load() {
   loading.value = true;
@@ -53,6 +84,11 @@ async function load() {
   } finally {
     loading.value = false;
   }
+}
+
+function openCreate() {
+  resetCreateForm();
+  createVisible.value = true;
 }
 
 async function onCreate() {
@@ -66,9 +102,44 @@ async function onCreate() {
     icon: form.icon || undefined,
     sort_order: form.sort_order,
     visible: form.visible,
+    status: form.status,
+    redirect: form.redirect || undefined,
   });
   ElMessage.success('已创建');
   createVisible.value = false;
+  await load();
+}
+
+function openEdit(row: SystemPermission) {
+  editId.value = row.id;
+  editForm.name = row.name;
+  editForm.parent_id = row.parent_id || '';
+  editForm.path = row.path || '';
+  editForm.component = row.component || '';
+  editForm.icon = row.icon || '';
+  editForm.sort_order = row.sort_order ?? 0;
+  editForm.visible = !!row.visible;
+  editForm.status = row.status || 'ACTIVE';
+  editForm.redirect = row.redirect || '';
+  editVisible.value = true;
+}
+
+async function onSaveEdit() {
+  const clearParent = !editForm.parent_id;
+  await updatePermissionApi(editId.value, {
+    name: editForm.name,
+    parent_id: editForm.parent_id || undefined,
+    clear_parent: clearParent,
+    path: editForm.path,
+    component: editForm.component,
+    icon: editForm.icon,
+    sort_order: editForm.sort_order,
+    visible: editForm.visible,
+    status: editForm.status,
+    redirect: editForm.redirect,
+  });
+  ElMessage.success('已更新（菜单变更需重新登录后生效）');
+  editVisible.value = false;
   await load();
 }
 
@@ -83,6 +154,10 @@ async function toggleVisible(row: SystemPermission) {
   await load();
 }
 
+function parentOptions(excludeId?: string) {
+  return items.value.filter((p) => p.id !== excludeId);
+}
+
 onMounted(() => {
   void load();
 });
@@ -94,7 +169,7 @@ onMounted(() => {
     description="sys_permission（MENU/BUTTON/API），非独立菜单表"
   >
     <div class="mb-4">
-      <ElButton type="primary" @click="createVisible = true">新增权限</ElButton>
+      <ElButton type="primary" @click="openCreate">新增权限</ElButton>
       <ElButton class="ml-2" @click="load">刷新</ElButton>
     </div>
     <ElTable v-loading="loading" :data="items" stripe row-key="id">
@@ -109,18 +184,19 @@ onMounted(() => {
       <ElTableColumn prop="sort_order" label="排序" width="80" />
       <ElTableColumn label="可见" width="90">
         <template #default="{ row }">
-          <ElSwitch
-            :model-value="row.visible"
-            @change="toggleVisible(row)"
-          />
+          <ElSwitch :model-value="row.visible" @change="toggleVisible(row)" />
         </template>
       </ElTableColumn>
-      <ElTableColumn label="操作" width="120" fixed="right">
+      <ElTableColumn label="操作" width="160" fixed="right">
         <template #default="{ row }">
+          <ElButton link type="primary" @click="openEdit(row)">编辑</ElButton>
           <ElButton
             link
             type="danger"
-            :disabled="row.code.startsWith('menu:') && row.type === 'MENU' && ['menu:dashboard','menu:system'].includes(row.code)"
+            :disabled="
+              row.type === 'MENU' &&
+              ['menu:dashboard', 'menu:system'].includes(row.code)
+            "
             @click="onDelete(row)"
           >
             删除
@@ -132,7 +208,10 @@ onMounted(() => {
     <ElDialog v-model="createVisible" title="新增权限节点" width="520px">
       <ElForm label-width="88px">
         <ElFormItem label="编码" required>
-          <ElInput v-model="form.code" placeholder="menu:xxx 或 knowledge:list" />
+          <ElInput
+            v-model="form.code"
+            placeholder="menu:xxx 或 knowledge:list"
+          />
         </ElFormItem>
         <ElFormItem label="名称" required>
           <ElInput v-model="form.name" />
@@ -163,6 +242,9 @@ onMounted(() => {
         <ElFormItem label="icon">
           <ElInput v-model="form.icon" placeholder="lucide:users" />
         </ElFormItem>
+        <ElFormItem label="redirect">
+          <ElInput v-model="form.redirect" />
+        </ElFormItem>
         <ElFormItem label="排序">
           <ElInputNumber v-model="form.sort_order" />
         </ElFormItem>
@@ -173,6 +255,69 @@ onMounted(() => {
       <template #footer>
         <ElButton @click="createVisible = false">取消</ElButton>
         <ElButton type="primary" @click="onCreate">确定</ElButton>
+      </template>
+    </ElDialog>
+
+    <ElDialog v-model="editVisible" title="编辑权限节点" width="520px">
+      <ElForm label-width="88px">
+        <ElFormItem label="编码">
+          <ElInput
+            :model-value="items.find((i) => i.id === editId)?.code"
+            disabled
+          />
+        </ElFormItem>
+        <ElFormItem label="类型">
+          <ElInput
+            :model-value="items.find((i) => i.id === editId)?.type"
+            disabled
+          />
+        </ElFormItem>
+        <ElFormItem label="名称" required>
+          <ElInput v-model="editForm.name" />
+        </ElFormItem>
+        <ElFormItem label="父节点">
+          <ElSelect
+            v-model="editForm.parent_id"
+            clearable
+            filterable
+            class="w-full"
+          >
+            <ElOption
+              v-for="p in parentOptions(editId)"
+              :key="p.id"
+              :label="`${p.name} (${p.code})`"
+              :value="p.id"
+            />
+          </ElSelect>
+        </ElFormItem>
+        <ElFormItem label="path">
+          <ElInput v-model="editForm.path" />
+        </ElFormItem>
+        <ElFormItem label="component">
+          <ElInput v-model="editForm.component" />
+        </ElFormItem>
+        <ElFormItem label="icon">
+          <ElInput v-model="editForm.icon" />
+        </ElFormItem>
+        <ElFormItem label="redirect">
+          <ElInput v-model="editForm.redirect" />
+        </ElFormItem>
+        <ElFormItem label="排序">
+          <ElInputNumber v-model="editForm.sort_order" />
+        </ElFormItem>
+        <ElFormItem label="状态">
+          <ElSelect v-model="editForm.status" class="w-full">
+            <ElOption label="ACTIVE" value="ACTIVE" />
+            <ElOption label="DISABLED" value="DISABLED" />
+          </ElSelect>
+        </ElFormItem>
+        <ElFormItem label="侧栏可见">
+          <ElSwitch v-model="editForm.visible" />
+        </ElFormItem>
+      </ElForm>
+      <template #footer>
+        <ElButton @click="editVisible = false">取消</ElButton>
+        <ElButton type="primary" @click="onSaveEdit">保存</ElButton>
       </template>
     </ElDialog>
   </Page>

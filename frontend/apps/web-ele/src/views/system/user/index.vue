@@ -55,6 +55,14 @@ const pwdVisible = ref(false);
 const pwdTarget = ref<SystemUser | null>(null);
 const newPassword = ref('');
 
+const editVisible = ref(false);
+const editTarget = ref<SystemUser | null>(null);
+const editForm = reactive({
+  nickname: '',
+  email: '',
+  status: 'ACTIVE',
+});
+
 async function loadRoles() {
   const data = await listRolesApi({ page_size: 100 });
   roles.value = data.items ?? [];
@@ -126,6 +134,26 @@ async function savePwd() {
   pwdVisible.value = false;
 }
 
+function openEdit(row: SystemUser) {
+  editTarget.value = row;
+  editForm.nickname = row.nickname || '';
+  editForm.email = row.email || '';
+  editForm.status = row.status || 'ACTIVE';
+  editVisible.value = true;
+}
+
+async function saveEdit() {
+  if (!editTarget.value) return;
+  await updateSystemUserApi(editTarget.value.id, {
+    nickname: editForm.nickname,
+    email: editForm.email,
+    status: editForm.status,
+  });
+  ElMessage.success('用户已更新');
+  editVisible.value = false;
+  await load();
+}
+
 onMounted(async () => {
   await loadRoles();
   await load();
@@ -149,6 +177,7 @@ onMounted(async () => {
     <ElTable v-loading="loading" :data="items" stripe>
       <ElTableColumn prop="username" label="用户名" min-width="120" />
       <ElTableColumn prop="nickname" label="昵称" min-width="120" />
+      <ElTableColumn prop="email" label="邮箱" min-width="160" />
       <ElTableColumn label="角色" min-width="140">
         <template #default="{ row }">
           <ElTag
@@ -168,8 +197,9 @@ onMounted(async () => {
           </ElTag>
         </template>
       </ElTableColumn>
-      <ElTableColumn label="操作" width="280" fixed="right">
+      <ElTableColumn label="操作" width="320" fixed="right">
         <template #default="{ row }">
+          <ElButton link type="primary" @click="openEdit(row)">编辑</ElButton>
           <ElButton link type="primary" @click="openRoles(row)">角色</ElButton>
           <ElButton link type="primary" @click="openPwd(row)">重置密码</ElButton>
           <ElButton link type="warning" @click="toggleStatus(row)">
@@ -218,6 +248,30 @@ onMounted(async () => {
       <template #footer>
         <ElButton @click="createVisible = false">取消</ElButton>
         <ElButton type="primary" @click="onCreate">确定</ElButton>
+      </template>
+    </ElDialog>
+
+    <ElDialog v-model="editVisible" title="编辑用户" width="480px">
+      <ElForm label-width="88px">
+        <ElFormItem label="用户名">
+          <ElInput :model-value="editTarget?.username" disabled />
+        </ElFormItem>
+        <ElFormItem label="昵称">
+          <ElInput v-model="editForm.nickname" maxlength="128" />
+        </ElFormItem>
+        <ElFormItem label="邮箱">
+          <ElInput v-model="editForm.email" maxlength="255" />
+        </ElFormItem>
+        <ElFormItem label="状态">
+          <ElSelect v-model="editForm.status" class="w-full">
+            <ElOption label="启用" value="ACTIVE" />
+            <ElOption label="停用" value="DISABLED" />
+          </ElSelect>
+        </ElFormItem>
+      </ElForm>
+      <template #footer>
+        <ElButton @click="editVisible = false">取消</ElButton>
+        <ElButton type="primary" @click="saveEdit">保存</ElButton>
       </template>
     </ElDialog>
 

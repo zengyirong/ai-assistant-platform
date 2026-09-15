@@ -13,6 +13,8 @@ import {
   ElFormItem,
   ElInput,
   ElMessage,
+  ElOption,
+  ElSelect,
   ElTable,
   ElTableColumn,
   ElTag,
@@ -36,6 +38,11 @@ const permFlat = ref<SystemPermission[]>([]);
 const createVisible = ref(false);
 const createCode = ref('');
 const createName = ref('');
+
+const editVisible = ref(false);
+const editTarget = ref<SystemRole | null>(null);
+const editName = ref('');
+const editStatus = ref('ACTIVE');
 
 const permVisible = ref(false);
 const permTarget = ref<SystemRole | null>(null);
@@ -87,6 +94,28 @@ async function toggleStatus(row: SystemRole) {
   await load();
 }
 
+function openEdit(row: SystemRole) {
+  editTarget.value = row;
+  editName.value = row.name;
+  editStatus.value = row.status;
+  editVisible.value = true;
+}
+
+async function saveEdit() {
+  if (!editTarget.value) return;
+  const body: { name?: string; status?: string } = {
+    name: editName.value,
+  };
+  // 内置角色不允许在编辑里停用
+  if (editTarget.value.code !== 'ADMIN' && editTarget.value.code !== 'USER') {
+    body.status = editStatus.value;
+  }
+  await updateRoleApi(editTarget.value.id, body);
+  ElMessage.success('角色已更新');
+  editVisible.value = false;
+  await load();
+}
+
 function openPerms(row: SystemRole) {
   permTarget.value = row;
   checkedKeys.value = [...(row.permission_ids ?? [])];
@@ -133,8 +162,9 @@ onMounted(() => {
           {{ (row.permission_ids || []).length }}
         </template>
       </ElTableColumn>
-      <ElTableColumn label="操作" width="220" fixed="right">
+      <ElTableColumn label="操作" width="260" fixed="right">
         <template #default="{ row }">
+          <ElButton link type="primary" @click="openEdit(row)">编辑</ElButton>
           <ElButton link type="primary" @click="openPerms(row)">权限</ElButton>
           <ElButton
             link
@@ -160,6 +190,30 @@ onMounted(() => {
       <template #footer>
         <ElButton @click="createVisible = false">取消</ElButton>
         <ElButton type="primary" @click="onCreate">确定</ElButton>
+      </template>
+    </ElDialog>
+
+    <ElDialog v-model="editVisible" title="编辑角色" width="420px">
+      <ElForm label-width="72px">
+        <ElFormItem label="编码">
+          <ElInput :model-value="editTarget?.code" disabled />
+        </ElFormItem>
+        <ElFormItem label="名称" required>
+          <ElInput v-model="editName" />
+        </ElFormItem>
+        <ElFormItem
+          v-if="editTarget && !['ADMIN', 'USER'].includes(editTarget.code)"
+          label="状态"
+        >
+          <ElSelect v-model="editStatus" class="w-full">
+            <ElOption label="ACTIVE" value="ACTIVE" />
+            <ElOption label="DISABLED" value="DISABLED" />
+          </ElSelect>
+        </ElFormItem>
+      </ElForm>
+      <template #footer>
+        <ElButton @click="editVisible = false">取消</ElButton>
+        <ElButton type="primary" @click="saveEdit">保存</ElButton>
       </template>
     </ElDialog>
 
