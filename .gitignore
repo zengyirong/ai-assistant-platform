@@ -36,3 +36,9 @@ Thumbs.db
 # Misc
 *.pem
 *.key
+
+# other
+demos/
+packet-capture/
+/docs
+https-deploy-runbook.md

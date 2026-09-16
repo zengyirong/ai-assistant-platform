@@ -56,4 +56,4 @@ M1 总结 / Bugs → … → **M6 一期收口（已完成）** → [交接说�
 | 目录 | 内容 |
 |---|---|
 | `plan/` | 为什么做、做什么、页面怎么组织、里程碑复盘与下一步 |
-| `docs/` | 怎么落地为契约（DDL、OpenAPI、SSE） |
+| `docs/` | 怎么落地为契约（DDL、OpenAPI、SSE）；运维手册如 [HTTPS 上线](../docs/https-deploy-runbook.md) |
