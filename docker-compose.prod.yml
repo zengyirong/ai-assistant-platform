@@ -1,0 +1,118 @@
+# Production stack: frontend + backend + MySQL + Qdrant
+# Bind only loopback ports; host Nginx terminates HTTPS on 80/443.
+#
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+#
+# On 2C4G shared hosts, prefer building images elsewhere and `docker load`
+# (see deploy doc section 12).
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: aap-mysql
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=caching_sha2_password
+      - --max-connections=80
+      - --innodb-buffer-pool-size=256M
+      - --performance-schema=OFF
+    volumes:
+      - aap_mysql_data:/var/lib/mysql
+    networks:
+      - aap_net
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+    mem_limit: 1g
+    cpus: 0.75
+
+  qdrant:
+    image: qdrant/qdrant:v1.13.2
+    container_name: aap-qdrant
+    restart: unless-stopped
+    volumes:
+      - aap_qdrant_data:/qdrant/storage
+    networks:
+      - aap_net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333'"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    mem_limit: 1g
+    cpus: 0.50
+
+  backend:
+    image: aap-backend:prod
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aap-backend
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    depends_on:
+      mysql:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:18000:8000"
+    volumes:
+      - aap_backend_files:/app/data/files
+    networks:
+      - aap_net
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    mem_limit: 512m
+    cpus: 0.50
+
+  frontend:
+    image: aap-frontend:prod
+    build:
+      context: ./frontend
+      dockerfile: scripts/deploy/Dockerfile.prod
+    container_name: aap-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:18080:8080"
+    networks:
+      - aap_net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    mem_limit: 128m
+    cpus: 0.25
+
+networks:
+  aap_net:
+    name: aap_net
+
+volumes:
+  aap_mysql_data:
+    name: aap_mysql_data
+  aap_qdrant_data:
+    name: aap_qdrant_data
+  aap_backend_files:
+    name: aap_backend_files
