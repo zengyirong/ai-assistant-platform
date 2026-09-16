@@ -799,7 +799,32 @@ proxy_send_timeout 3600s;
 5. 改用第 12 节本地构建。
 6. 长期：升到 4 核 8G 或拆分 MySQL/Qdrant。
 
-### 18.7 问答时模型 API 调用失败
+### 18.7 本机构建时 apt / npm / pip 在 Docker 内超时
+
+现象：宿主机浏览器/PowerShell 能上网，但 `docker build` 里访问 `deb.debian.org`、`registry.npmjs.org`、`pypi` 全部超时。
+
+原因：Docker Desktop 容器网络出站异常（与镜像源无关）。
+
+推荐做法（本机有 Node + Python 时）：
+
+```powershell
+# 在仓库根目录
+.\scripts\build-prod-images.ps1
+```
+
+脚本会：本机 `pnpm build:ele` → 本机下载 Linux 版 pip wheels → 离线打前端/后端镜像。
+
+完成后：
+
+```powershell
+docker images aap-frontend:prod
+docker images aap-backend:prod
+docker save aap-frontend:prod aap-backend:prod -o aap-images.tar
+```
+
+也可尝试在 Docker Desktop → Settings → Network 中改 DNS（如 `8.8.8.8` / `114.114.114.114`）后重试普通 `compose build`。
+
+### 18.8 问答时模型 API 调用失败
 
 `/ready` 只检查 MySQL 和 Qdrant。上线前在服务器验证外网模型可达：
 

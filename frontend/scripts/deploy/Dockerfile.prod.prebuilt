@@ -1,0 +1,11 @@
+# 本机已 pnpm build:ele 后，只用 Nginx 打包静态资源（几乎不需要构建期外网）
+FROM nginx:stable-alpine
+
+RUN rm -f /etc/nginx/conf.d/default.conf
+
+COPY apps/web-ele/dist /usr/share/nginx/html
+COPY scripts/deploy/nginx.prod.conf /etc/nginx/nginx.conf
+
+EXPOSE 8080
+
+CMD ["nginx", "-g", "daemon off;"]

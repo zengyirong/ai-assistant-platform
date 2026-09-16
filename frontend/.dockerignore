@@ -1,7 +1,22 @@
-node_modules
+# Host deps use Windows junctions (pnpm); never send them to BuildKit
+**/node_modules
+**/node_modules/**
+**/.pnpm-store
+**/.turbo
+**/.vite
+**/coverage
+**/.cache
+
+# Keep apps/web-ele/dist for Dockerfile.prod.prebuilt
+**/dist
+!apps/web-ele/dist
+!apps/web-ele/dist/**
+
 .git
 .gitignore
 *.md
-dist
-.turbo
 dist.zip
+.DS_Store
+*.log
+.vscode
+.idea

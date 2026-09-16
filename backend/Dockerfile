@@ -7,18 +7,16 @@ ENV TZ=Asia/Shanghai
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl default-mysql-client \
-    && rm -rf /var/lib/apt/lists/*
-
+# 离线依赖：由本机 scripts/build-prod-images.ps1 预先 pip download 到 wheels/
+COPY wheels /wheels
 COPY pyproject.toml README.md alembic.ini ./
 COPY app ./app
 COPY alembic ./alembic
 COPY scripts ./scripts
 
-RUN pip install -e .
+RUN pip install --no-index --find-links=/wheels -e . \
+    && rm -rf /wheels
 
 EXPOSE 8000
 
-# 2C4G 先用 1 worker；升配后再考虑增加
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

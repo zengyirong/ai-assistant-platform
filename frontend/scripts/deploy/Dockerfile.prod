@@ -6,6 +6,10 @@ ENV PATH=$PNPM_HOME:$PATH
 ENV NODE_OPTIONS=--max-old-space-size=2048
 ENV TZ=Asia/Shanghai
 ENV CI=true
+# 国内构建默认走 npmmirror；海外可覆盖为 https://registry.npmjs.org
+ARG NPM_REGISTRY=https://registry.npmmirror.com
+ENV COREPACK_NPM_REGISTRY=${NPM_REGISTRY}
+ENV npm_config_registry=${NPM_REGISTRY}
 
 WORKDIR /app
 
@@ -24,7 +28,11 @@ RUN printf '%s\n' \
   'VITE_ARCHIVER=false' \
   > apps/web-ele/.env.production
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    corepack prepare pnpm@11.16.0 --activate \
+    && pnpm config set registry ${NPM_REGISTRY} \
+    && pnpm install --frozen-lockfile
+
 RUN pnpm run build:ele
 
 FROM nginx:stable-alpine AS production

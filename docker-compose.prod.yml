@@ -21,7 +21,6 @@ services:
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
-      - --default-authentication-plugin=caching_sha2_password
       - --max-connections=80
       - --innodb-buffer-pool-size=256M
       - --performance-schema=OFF
@@ -30,7 +29,11 @@ services:
     networks:
       - aap_net
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent",
+        ]
       interval: 10s
       timeout: 5s
       retries: 20
@@ -76,7 +79,13 @@ services:
     networks:
       - aap_net
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)",
+        ]
       interval: 30s
       timeout: 5s
       retries: 5
@@ -88,7 +97,8 @@ services:
     image: aap-frontend:prod
     build:
       context: ./frontend
-      dockerfile: scripts/deploy/Dockerfile.prod
+      # 默认用本机预编译产物打包（规避 Docker 内网超时）；全量容器内构建改用 Dockerfile.prod
+      dockerfile: scripts/deploy/Dockerfile.prod.prebuilt
     container_name: aap-frontend
     restart: unless-stopped
     depends_on:

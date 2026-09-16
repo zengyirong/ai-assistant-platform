@@ -86,6 +86,9 @@ async def create_conversation(
     db.add(conv)
     await db.flush()
     await db.refresh(conv)
+    # Commit before response: frontend immediately calls /chat/stream with this id.
+    # get_db() commits only after the response is sent, which races and causes 404.
+    await db.commit()
     return conversation_to_dict(conv)
 
 

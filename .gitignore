@@ -27,6 +27,7 @@ dist/
 # Data / uploads
 data/
 *.log
+backend/wheels/
 
 # IDE / OS
 .idea/
@@ -43,3 +44,6 @@ demos/
 packet-capture/
 /docs
 https-deploy-runbook.md
+
+aap-images.tar
+*.tar
